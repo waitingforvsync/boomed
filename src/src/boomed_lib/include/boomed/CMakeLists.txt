@@ -1,0 +1,9 @@
+target_sources("boomed_lib"
+    PUBLIC
+    "world.h"
+    "math/math.h"
+    "math/mat22f.h"
+    "math/mat23f.h"
+    "math/vec2f.h"
+    "math/vec2i.h"
+)

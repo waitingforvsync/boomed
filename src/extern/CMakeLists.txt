@@ -1,0 +1,5 @@
+#add_subdirectory("Catch2-3.7.1")
+#add_subdirectory("imgui-1.91.5")
+set(SDL_STATIC ON)
+set(SDL_SHARED OFF)
+add_subdirectory("SDL-preview-3.1.6")
