@@ -1,5 +1,6 @@
 target_sources("boomed_lib"
     PRIVATE
+    "arena.c"
     "world.c"
 )
 

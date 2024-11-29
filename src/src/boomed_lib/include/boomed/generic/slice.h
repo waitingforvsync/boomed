@@ -17,4 +17,7 @@
     } slice_##name##_t;
 
 
+#define INDEX_NONE (0xFFFFFFFFU)
+
+
 #endif // ifndef BOOMED_GENERIC_SLICE_H_

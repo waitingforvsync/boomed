@@ -7,7 +7,6 @@
 #include "boomed/math/math.h"
 #include "boomed/math/vec2f.h"
 
-
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 //static bool show_demo_window = true;
@@ -77,7 +76,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
 	(void)appstate;
-	
+
 #if 0
 	// Start the Dear ImGui frame
 	igImplSDLRenderer3_NewFrame();
