@@ -2,4 +2,5 @@
 #add_subdirectory("imgui-1.91.5")
 set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
+set(SDL_TEST_LIBRARY OFF)
 add_subdirectory("SDL-preview-3.1.6")

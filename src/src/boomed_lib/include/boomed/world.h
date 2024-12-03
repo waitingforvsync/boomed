@@ -11,13 +11,13 @@ typedef struct edge_t edge_t;
 typedef struct contour_t contour_t;
 typedef struct zone_t zone_t;
 typedef struct world_t world_t;
-typedef uint16_t element_id_t;
 
+typedef uint16_t element_id_t;
+DEF_ARRAY(element_id, element_id_t)
 DEF_ARRAY(vertex, vertex_t)
 DEF_ARRAY(edge, edge_t)
 DEF_ARRAY(contour, contour_t)
 DEF_ARRAY(zone, zone_t)
-DEF_ARRAY(element_id, element_id_t)
 
 
 // Define structs relating to the world.
