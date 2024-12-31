@@ -11,13 +11,10 @@ typedef struct edge_t edge_t;
 typedef struct contour_t contour_t;
 typedef struct zone_t zone_t;
 typedef struct world_t world_t;
+typedef struct world_ctx_t world_ctx_t;
 
 typedef uint16_t element_id_t;
 DEF_ARRAY(element_id, element_id_t)
-DEF_ARRAY(vertex, vertex_t)
-DEF_ARRAY(edge, edge_t)
-DEF_ARRAY(contour, contour_t)
-DEF_ARRAY(zone, zone_t)
 
 
 // Define structs relating to the world.
@@ -41,6 +38,8 @@ struct vertex_t {
     array_element_id_t edge_ids;
 };
 
+DEF_ARRAY(vertex, vertex_t)
+
 
 // Representation of an edge in the world.
 // Edges are defined by the two vertices they connect (this is an unordered set),
@@ -57,6 +56,8 @@ struct edge_t {
     uint8_t lower_colour;
 };
 
+DEF_ARRAY(edge, edge_t)
+
 
 // A contour is just an array of edge IDs.
 // Contours are used to define zone perimeters and also any holes which may be present within a zone.
@@ -64,6 +65,9 @@ struct edge_t {
 struct contour_t {
     array_element_id_t edge_ids;
 };
+
+DEF_ARRAY(contour, contour_t)
+
 
 
 // A zone is the irregular polygon formed by a closed contour of edges.
@@ -81,6 +85,8 @@ struct zone_t {
     uint8_t ceiling_colour;
 };
 
+DEF_ARRAY(zone, zone_t)
+
 
 // This is the world, composed of vertices, edges and zones.
 // Here we maintain a number of arenas used for dynamically allocating these elements.
@@ -94,6 +100,16 @@ struct world_t {
     arena_t zone_arena;
     arena_t vertex_edges_arena;
     arena_t zone_contours_arena;
+};
+
+
+struct world_ctx_t {
+    world_t world;
+    arena_t vertex_arena;
+    arena_t edge_arena;
+    arena_t zone_arena;
+    arena_t id_arena;
+    arena_t temp_id_arena;
 };
 
 

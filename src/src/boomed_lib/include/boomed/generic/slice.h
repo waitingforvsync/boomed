@@ -17,6 +17,12 @@
     } slice_##name##_t;
 
 
+#define SLICE(type, ...) { \
+        .data = (type[]){__VA_ARGS__}, \
+        .num = sizeof((type[]){__VA_ARGS__}) / sizeof(type) \
+    }
+
+
 #define INDEX_NONE (0xFFFFFFFFU)
 
 

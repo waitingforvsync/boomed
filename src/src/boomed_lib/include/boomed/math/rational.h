@@ -22,7 +22,7 @@ static inline rational_t make_rational(int64_t num, int64_t denom) {
         num = -num;
         denom = -denom;
     }
-    int64_t d = gcd(num, denom);
+    int64_t d = gcd_int64(num, denom);
     return (rational_t){
         num / d,
         denom / d
@@ -34,7 +34,7 @@ static inline rational_t make_rational_from_int(int64_t num) {
 }
 
 static inline bool rational_is_valid(rational_t a) {
-    return a.denom > 0 && gcd(a.num, a.denom) == 1;
+    return a.denom > 0 && gcd_int64(a.num, a.denom) == 1;
 }
 
 static inline rational_t rational_int_mul(rational_t a, int64_t b) {
@@ -61,7 +61,7 @@ static inline rational_t rational_int_add(rational_t a, int64_t b) {
 }
 
 static inline rational_t rational_add(rational_t a, rational_t b) {
-    int64_t d = gcd(a.denom, b.denom);
+    int64_t d = gcd_int64(a.denom, b.denom);
     int64_t da = a.denom / d;
     int64_t db = b.denom / d;
     return (rational_t){
@@ -78,7 +78,7 @@ static inline rational_t rational_int_sub(rational_t a, int64_t b) {
 }
 
 static inline rational_t rational_sub(rational_t a, rational_t b) {
-    int64_t d = gcd(a.denom, b.denom);
+    int64_t d = gcd_int64(a.denom, b.denom);
     int64_t da = a.denom / d;
     int64_t db = b.denom / d;
     return (rational_t){

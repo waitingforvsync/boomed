@@ -10,6 +10,7 @@
             fn(i, slice.data[i]); \
         } \
     } \
+    \
     static inline void for_each_##name##_ctx(slice_##name##_t slice, void (*fn)(uint32_t, type *, void *), void *context) { \
         for (uint32_t i = 0; i < slice.size; i++) { \
             fn(i, slice.data[i], context); \

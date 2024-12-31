@@ -1,7 +1,12 @@
 target_sources("boomed_lib"
     PUBLIC
-    "generic/slice.h"
     "generic/array.h"
+    "generic/find.h"
+    "generic/for_each.h"
+    "generic/is_equal.h"
+    "generic/max.h"
+    "generic/min.h"
+    "generic/slice.h"
     "math/math.h"
     "math/rational.h"
     "math/mat22f.h"
