@@ -6,8 +6,8 @@
 
 
 #define DEF_IS_EQUAL(name, type) \
-    static inline bool is_equal_##name(type a, type b) { \
-        return a == b; \
+    static inline bool is_equal_##name(const type *a, const type *b) { \
+        return *a == *b; \
     }
 
 DEF_IS_EQUAL(int32, int32_t)

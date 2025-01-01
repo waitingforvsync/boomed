@@ -1,7 +1,6 @@
 #ifndef BOOMED_GENERIC_ARRAY_H_
 #define BOOMED_GENERIC_ARRAY_H_
 
-#include <string.h>
 #include "boomed/generic/slice.h"
 
 typedef struct arena_t arena_t;

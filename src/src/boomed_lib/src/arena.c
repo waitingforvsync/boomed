@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "boomed/arena.h"
 
-#define ARENA_DEFAULT_BLOCK_SIZE (256 * 1024)
+#define ARENA_DEFAULT_BLOCK_SIZE (64 * 1024)
 
 // Arenas are coarse allocations from which smaller allocations are made in a stack-like manner.
 // Instead of freeing allocations individually, they may be freed in one go by resetting the arena.

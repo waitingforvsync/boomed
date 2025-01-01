@@ -1,9 +1,12 @@
 target_sources("boomed_lib"
     PUBLIC
+    "generic/all_of.h"
+    "generic/any_of.h"
     "generic/array.h"
     "generic/find.h"
     "generic/for_each.h"
     "generic/is_equal.h"
+    "generic/lower_bound.h"
     "generic/max.h"
     "generic/min.h"
     "generic/slice.h"

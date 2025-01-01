@@ -1,4 +1,9 @@
 #include "boomed/world.h"
+#include "boomed/generic/is_less.h"
+#include "boomed/generic/lower_bound.h"
+
+DEF_IS_LESS(element_id, element_id_t)
+DEF_LOWER_BOUND(element_id, element_id_t)
 
 
 world_t make_world(void) {
