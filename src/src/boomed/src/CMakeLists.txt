@@ -1,6 +1,7 @@
 target_sources("boomed"
     PRIVATE
-#    "boomed.c"
-    "main_sdl.c"
+    "main_sdl3.c"
+    "main_sdl3.h"
     "viewport.c"
+    "viewport.h"
 )

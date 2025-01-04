@@ -98,22 +98,11 @@ struct world_t {
     arena_t vertex_arena;
     arena_t edge_arena;
     arena_t zone_arena;
-    arena_t vertex_edges_arena;
-    arena_t zone_contours_arena;
-};
-
-
-struct world_ctx_t {
-    world_t world;
-    arena_t vertex_arena;
-    arena_t edge_arena;
-    arena_t zone_arena;
     arena_t id_arena;
     arena_t temp_id_arena;
 };
 
 
-world_t make_world(void);
 void world_init(world_t *world);
 void world_deinit(world_t *world);
 

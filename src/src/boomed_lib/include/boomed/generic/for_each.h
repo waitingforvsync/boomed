@@ -15,6 +15,18 @@
         for (uint32_t i = 0; i < slice.size; i++) { \
             fn(ctx, i, slice.data + i); \
         } \
+    } \
+    \
+    static inline void for_each_const_##name(slice_const_##name##_t slice, void (*fn)(uint32_t, const type *)) { \
+        for (uint32_t i = 0; i < slice.size; i++) { \
+            fn(i, slice.data + i); \
+        } \
+    } \
+    \
+    static inline void for_each_const_##name##_ctx(slice_const_##name##_t slice, void (*fn)(const void *, uint32_t, const type *), const void *ctx) { \
+        for (uint32_t i = 0; i < slice.size; i++) { \
+            fn(ctx, i, slice.data + i); \
+        } \
     }
 
 

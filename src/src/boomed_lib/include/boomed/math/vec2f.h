@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <math.h>
+#include "vec2i.h"
 
 
 typedef struct vec2f_t vec2f_t;
@@ -52,6 +53,13 @@ static inline vec2f_t vec2f_make_from_floats(const float *f) {
 	return (vec2f_t){
         f[0],
         f[1]
+    };
+}
+
+static inline vec2f_t vec2f_make_from_vec2i(vec2i_t v) {
+    return (vec2f_t){
+        (float)v.x,
+        (float)v.y
     };
 }
 

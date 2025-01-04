@@ -19,6 +19,20 @@ static inline mat23f_t mat23f_make_identity(void) {
 	};
 }
 
+static inline mat23f_t mat23f_make_transform(vec2f_t v) {
+	return (mat23f_t){
+		mat22f_make_identity(),
+		v
+	};
+}
+
+static inline mat23f_t mat23f_make_from_mat22f(mat22f_t m) {
+	return (mat23f_t){
+		m,
+		vec2f_make_zero()
+	};
+}
+
 static inline mat23f_t mat23f_make_from_floats(const float *f) {
 	return (mat23f_t){
 		mat22f_make_from_floats(f),
@@ -37,6 +51,20 @@ static inline mat23f_t mat23f_mul(mat23f_t a, mat23f_t b) {
 	return (mat23f_t){
 		mat22f_mul(a.m, b.m),
 		mat23f_vec2f_mul(a, b.t)
+	};
+}
+
+static inline mat23f_t mat22f_23f_mul(mat22f_t a, mat23f_t b) {
+	return (mat23f_t){
+		mat22f_mul(a, b.m),
+		mat22f_vec2f_mul(a, b.t)
+	};
+}
+
+static inline mat23f_t mat23f_mat22f_mul(mat23f_t a, mat22f_t b) {
+	return (mat23f_t){
+		mat22f_mul(a.m, b),
+		a.t
 	};
 }
 

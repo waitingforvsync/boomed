@@ -25,14 +25,14 @@ union arena_block_header_t {
 
 
 arena_t make_arena(void) {
-    arena_t arena;
+    arena_t arena = {0};
     arena_init(&arena, ARENA_DEFAULT_BLOCK_SIZE);
     return arena;
 }
 
 
 arena_t make_arena_with_size(uint32_t initial_size) {
-    arena_t arena;
+    arena_t arena = {0};
     arena_init(&arena, initial_size);
     return arena;
 }
