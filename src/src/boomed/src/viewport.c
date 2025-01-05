@@ -59,7 +59,30 @@ void viewport_stop_pan(viewport_t *viewport, vec2f_t viewport_pos) {
 void viewport_set_zoom(viewport_t *viewport, vec2f_t viewport_pos, float zoom_delta) {
     float old_zoom = viewport->zoom;
     viewport->zoom *= powf(1.25f, zoom_delta);
+    vec2f_t world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, viewport_pos);
+    viewport->focus_world_pos = vec2f_add(
+        world_pos,
+        vec2f_scalar_mul(vec2f_sub(viewport->focus_world_pos, world_pos), old_zoom / viewport->zoom)
+    );
     viewport_calc_transforms(viewport);
+}
+
+
+static void draw_grid(const viewport_t *viewport) {
+    vec2f_t top_left_world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero());
+
+    vec2f_t start = mat23f_vec2f_mul(
+        viewport->world_to_viewport,
+        vec2f_scalar_mul(vec2f_component_ceil(vec2f_scalar_mul(top_left_world_pos, 1.0f / 32.0f)), 32.0f)
+    );
+
+    for (float x = start.x; x < viewport->size.x; x += 32.0f * viewport->zoom) {
+        draw_thick_line((vec2f_t){x, 0.0f}, (vec2f_t){x, viewport->size.y}, 1, 0xFF777058);
+    }
+
+    for (float y = start.y; y < viewport->size.y; y += 32.0f * viewport->zoom) {
+        draw_thick_line((vec2f_t){0.0f, y}, (vec2f_t){viewport->size.x, y}, 1, 0xFF777058);
+    }
 }
 
 
@@ -96,6 +119,7 @@ static void draw_zone(const void *ctx, uint32_t index, const zone_t *zone) {
 
 void viewport_render(const viewport_t *viewport) {
     const world_t *world = viewport->world;
+    draw_grid(viewport);
     for_each_const_zone_ctx(world->zones.const_slice, draw_zone, viewport);
     for_each_const_edge_ctx(world->edges.const_slice, draw_edge, viewport);
     for_each_const_vertex_ctx(world->vertices.const_slice, draw_vertex, viewport);

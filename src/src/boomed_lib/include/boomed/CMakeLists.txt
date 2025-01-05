@@ -17,5 +17,6 @@ target_sources("boomed_lib"
     "math/mat23f.h"
     "math/vec2f.h"
     "math/vec2i.h"
+    "boomed.h"
     "world.h"
 )

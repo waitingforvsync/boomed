@@ -112,6 +112,20 @@ static inline vec2f_t vec2f_component_min(vec2f_t a, vec2f_t b) {
 	};
 }
 
+static inline vec2f_t vec2f_component_floor(vec2f_t a) {
+    return (vec2f_t){
+        floorf(a.x),
+        floorf(a.y)
+    };
+}
+
+static inline vec2f_t vec2f_component_ceil(vec2f_t a) {
+    return (vec2f_t){
+        ceilf(a.x),
+        ceilf(a.y)
+    };
+}
+
 static inline vec2f_t vec2f_component_max(vec2f_t a, vec2f_t b) {
 	return (vec2f_t){
 		fmaxf(a.x, b.x),
