@@ -19,8 +19,8 @@ DEF_ARRAY(element_id, element_id_t)
 
 // Define structs relating to the world.
 //
-// We use a left-handed coordinate system, with X up and Y right (and thus Z towards, if viewing the
-// world from "above", so ceilings have a higher Z than floors)
+// We use a right-handed coordinate system, with X up and Y right (and thus Z away, if viewing the
+// world from "above", so ceilings have a lower Z than floors)
 //
 //       X
 //       |

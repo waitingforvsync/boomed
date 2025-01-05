@@ -70,18 +70,40 @@ void viewport_set_zoom(viewport_t *viewport, vec2f_t viewport_pos, float zoom_de
 
 static void draw_grid(const viewport_t *viewport) {
     vec2f_t top_left_world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero());
+    vec2f_t grid_world_origin = vec2f_component_ceil(top_left_world_pos);
+    vec2f_t grid_viewport_origin = mat23f_vec2f_mul(viewport->world_to_viewport, grid_world_origin);
 
-    vec2f_t start = mat23f_vec2f_mul(
-        viewport->world_to_viewport,
-        vec2f_scalar_mul(vec2f_component_ceil(vec2f_scalar_mul(top_left_world_pos, 1.0f / 32.0f)), 32.0f)
-    );
+    for (uint32_t n = 4; n < 9; n++) {
+        int32_t gridw = 1 << n;
 
-    for (float x = start.x; x < viewport->size.x; x += 32.0f * viewport->zoom) {
-        draw_thick_line((vec2f_t){x, 0.0f}, (vec2f_t){x, viewport->size.y}, 1, 0xFF777058);
-    }
+        float f = 1.0f - 0.25f * (n * n / 64.0f);
+        uint32_t colour = ((uint32_t)(0x72 * f) << 0) | ((uint32_t)(0x8C * f) << 8) | ((uint32_t)(0x99 * f) << 16) | (0xFF << 24);
 
-    for (float y = start.y; y < viewport->size.y; y += 32.0f * viewport->zoom) {
-        draw_thick_line((vec2f_t){0.0f, y}, (vec2f_t){viewport->size.x, y}, 1, 0xFF777058);
+        // Plot vertical lines from left to right of the viewport
+        // Note this corresponds to advancing in y world space
+        int32_t startx = (int32_t)grid_world_origin.y;
+        int32_t gridx = (startx + gridw - 1) & ~(gridw - 1);
+        float x = grid_viewport_origin.x + (gridx - startx) * viewport->zoom;
+        while (x < viewport->size.x) {
+            if ((gridx & gridw) || n == 8) {
+                draw_thick_line((vec2f_t){x, 0.0f}, (vec2f_t){x, viewport->size.y}, 1, colour);
+            }
+            gridx += gridw;
+            x += gridw * viewport->zoom;
+        }
+
+        // Plot horizontal lines from top to bottom of the viewport
+        // Note this corresponds to advancing in -x in world space
+        int32_t starty = (int32_t)grid_world_origin.x;
+        int32_t gridy = starty & ~(gridw - 1);
+        float y = grid_viewport_origin.y + (starty - gridy) * viewport->zoom;
+        while (y < viewport->size.y) {
+            if ((gridy & gridw) || n == 8) {
+                draw_thick_line((vec2f_t){0.0f, y}, (vec2f_t){viewport->size.x, y}, 1, colour);
+            }
+            gridy -= gridw;
+            y += gridw * viewport->zoom;
+        }
     }
 }
 

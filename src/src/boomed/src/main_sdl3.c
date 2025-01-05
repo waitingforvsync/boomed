@@ -19,7 +19,7 @@ static world_t world = {0};
 
 static viewport_t viewport = {
 	.world = &world,
-	.zoom = 4.0f
+	.zoom = 2.0f
 };
 
 
