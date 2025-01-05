@@ -114,7 +114,7 @@ static void draw_vertex(const void *ctx, uint32_t index, const vertex_t *vertex)
     vec2f_t world_pos = vec2f_make_from_vec2i(vertex->position);
     vec2f_t viewport_pos = mat23f_vec2f_mul(viewport->world_to_viewport, world_pos);
 
-    draw_point(viewport_pos, 4, 0xFFB0E0FF);
+    draw_point(viewport_pos, 6, 0xFF300030);
 }
 
 
