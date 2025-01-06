@@ -95,34 +95,56 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			if (event->button.button == SDL_BUTTON_RIGHT) {
-				viewport_start_pan(&viewport, (vec2f_t){event->button.x, event->button.y});
+				viewport_pan_start(&viewport, (vec2f_t){event->button.x, event->button.y});
 			}
 			else if (event->button.button == SDL_BUTTON_LEFT) {
-
+				viewport_action_start(&viewport, (vec2f_t){event->button.x, event->button.y});
 			}
 			break;
 
 		case SDL_EVENT_MOUSE_BUTTON_UP:
 			if (event->button.button == SDL_BUTTON_RIGHT) {
-				viewport_stop_pan(&viewport, (vec2f_t){event->button.x, event->button.y});
+				viewport_pan_stop(&viewport, (vec2f_t){event->button.x, event->button.y});
 			}
 			else if (event->button.button == SDL_BUTTON_LEFT) {
-
+				viewport_action_stop(&viewport, (vec2f_t){event->button.x, event->button.y});
 			}
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
 			if (event->motion.state & SDL_BUTTON_RMASK) {
-				viewport_set_pan(&viewport, (vec2f_t){event->motion.x, event->motion.y});
+				viewport_pan_move(&viewport, (vec2f_t){event->motion.x, event->motion.y});
 			}
 			else if (event->motion.state & SDL_BUTTON_LMASK) {
-
+				viewport_action_move(&viewport, (vec2f_t){event->motion.x, event->motion.y});
 			}
 			break;
 		
 		case SDL_EVENT_MOUSE_WHEEL:
 			viewport_set_zoom(&viewport, (vec2f_t){event->wheel.mouse_x, event->wheel.mouse_y}, event->wheel.y);
 			break;
+
+		case SDL_EVENT_KEY_DOWN:
+			if (event->key.mod & SDL_KMOD_CTRL) {
+				switch (event->key.key) {
+					case SDLK_Z:
+						viewport_command_undo(&viewport);
+						break;
+					case SDLK_Y:
+						viewport_command_redo(&viewport);
+						break;
+					case SDLK_X:
+						viewport_command_cut(&viewport);
+						break;
+					case SDLK_C:
+						viewport_command_copy(&viewport);
+						break;
+					case SDLK_V:
+						viewport_command_paste(&viewport);
+						break;
+				}
+				break;
+			}
 	}
 	
 	return SDL_APP_CONTINUE;

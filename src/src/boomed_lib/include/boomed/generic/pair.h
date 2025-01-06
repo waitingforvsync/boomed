@@ -18,5 +18,11 @@ DEF_PAIR(float, float)
 DEF_PAIR(double, double)
 
 
+#define DEF_PAIR2(name, type1, type2) \
+    typedef struct pair_##name##_t { \
+        type1 first; \
+        type2 second; \
+    } pair_##name##_t;
+
 
 #endif // ifndef BOOMED_GENERIC_PAIR_H_

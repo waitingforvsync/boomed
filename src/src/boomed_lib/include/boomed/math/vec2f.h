@@ -112,6 +112,13 @@ static inline vec2f_t vec2f_component_min(vec2f_t a, vec2f_t b) {
 	};
 }
 
+static inline vec2f_t vec2f_component_max(vec2f_t a, vec2f_t b) {
+	return (vec2f_t){
+		fmaxf(a.x, b.x),
+		fmaxf(a.y, b.y)
+	};
+}
+
 static inline vec2f_t vec2f_component_floor(vec2f_t a) {
     return (vec2f_t){
         floorf(a.x),
@@ -126,11 +133,11 @@ static inline vec2f_t vec2f_component_ceil(vec2f_t a) {
     };
 }
 
-static inline vec2f_t vec2f_component_max(vec2f_t a, vec2f_t b) {
-	return (vec2f_t){
-		fmaxf(a.x, b.x),
-		fmaxf(a.y, b.y)
-	};
+static inline vec2f_t vec2f_component_abs(vec2f_t a) {
+    return (vec2f_t){
+        fabsf(a.x),
+        fabsf(a.y)
+    };
 }
 
 static inline vec2f_t vec2f_lerp(vec2f_t a, vec2f_t b, float t) {
@@ -183,6 +190,10 @@ static inline vec2f_t vec2f_negate(vec2f_t a) {
 
 static inline bool vec2f_is_nearly_equal(vec2f_t a, vec2f_t b, float tolerance) {
 	return vec2f_lengthsqr(vec2f_sub(a, b)) < tolerance * tolerance;
+}
+
+static inline bool is_equal_vec2f(const vec2f_t *a, const vec2f_t *b) {
+    return vec2f_is_nearly_equal(*a, *b, 1.0e-8f);
 }
 
 static inline const float *vec2f_as_floats(const vec2f_t *a) {
