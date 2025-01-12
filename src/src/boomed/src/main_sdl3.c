@@ -6,6 +6,7 @@
 //#include <cimgui/backends/cimgui_impl_sdlrenderer3.h>
 #include "main_sdl3.h"
 #include "viewport.h"
+#include "boomed/boomed.h"
 #include "boomed/world.h"
 #include "boomed/math/math.h"
 #include "boomed/math/vec2f.h"

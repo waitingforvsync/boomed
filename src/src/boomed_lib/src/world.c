@@ -1,15 +1,6 @@
 #include "boomed/world.h"
+#include "boomed/math/aabb2f.h"
 #include "boomed/math/vec2f.h"
-#include "boomed/generic/find.h"
-#include "boomed/generic/max.h"
-#include "boomed/generic/min.h"
-#include "boomed/generic/min_element.h"
-#include "boomed/generic/optional.h"
-
-
-DEF_FIND_BY_PRED_CTX(vertex, vertex_t)
-DEF_IS_LESS_OPTIONAL(float, float)
-DEF_MIN_ELEMENT_BY_SCORE_CTX(edge, optional_float, edge_t, optional_float_t)
 
 
 void world_init(world_t *world) {
@@ -50,89 +41,62 @@ void world_deinit(world_t *world) {
 
 
 
-typedef struct {
-    vec2f_t point;
-    float half_snap;
-} world_find_vertex_ctx_t;
+uint32_t world_find_vertex_at_position(const world_t *world, vec2f_t point, float within) {
+    const vertex_t *vertices = world->vertices.data;
+    float tolerance_sqr = within * within;
+    uint32_t result = INDEX_NONE;
 
-static bool is_vertex_within_snap_distance(void *ctx, const vertex_t *vertex) {
-    const world_find_vertex_ctx_t* find_vertex_ctx = ctx;
-    return fabsf(find_vertex_ctx->point.x - vertex->position.x) <= find_vertex_ctx->half_snap &&
-           fabsf(find_vertex_ctx->point.y - vertex->position.y) <= find_vertex_ctx->half_snap;
-}
-
-
-uint32_t world_find_vertex_at_position(const world_t *world, vec2f_t point, uint32_t snap) {
-    return find_vertex_by_pred_ctx(
-        world->vertices.const_slice,
-        is_vertex_within_snap_distance,
-        &(world_find_vertex_ctx_t) {point, snap * 0.5f}
-    );
-}
-
-
-static optional_float_t distance_edge_point(vec2f_t start, vec2f_t end, vec2f_t point) {
-    // First reject by bounding box
-    if (point.x < min_float(start.x, end.x) ||
-        point.x > max_float(start.x, end.x) ||
-        point.y < min_float(start.y, end.y) ||
-        point.y > max_float(start.y, end.y)
-    ) {
-        return (optional_float_t) {false};
+    for (uint32_t i = 0, num_vertices = world->vertices.size; i < num_vertices; ++i) {
+        float distance_sqr = vec2f_lengthsqr(vec2f_sub(point, vec2f_make_from_vec2i(vertices[i].position)));
+        if (distance_sqr <= tolerance_sqr) {
+            result = i;
+            tolerance_sqr = distance_sqr;
+        }
     }
+    return result;
+}
 
-    // Next reject by zero-length edges
+
+static float edge_point_distancesqr(vec2f_t start, vec2f_t end, vec2f_t point) {
     vec2f_t delta = vec2f_sub(end, start);
     float lengthsqr = vec2f_lengthsqr(delta);
-
     if (lengthsqr == 0.0f) {
-        return (optional_float_t) {false};
+        // We don't expect zero length edges -
+        // But if they occur, the distance is simply the distance from point to either edge point
+        return vec2f_lengthsqr(vec2f_sub(start, point));
     }
 
-    // Next reject if the perpendicular point is not on the segment
+    // Calculate the projection distance along the edge (0, lengthsqr)
+    // Distances outside this range get interpreted as the distance from the closest endpoint
     float dot = vec2f_dot(vec2f_sub(point, start), delta);
-    if (dot < 0.0f || dot > lengthsqr) {
-        return (optional_float_t) {false};
+    if (dot < 0.0f) {
+        return vec2f_lengthsqr(vec2f_sub(start, point));
+    } else if (dot > lengthsqr) {
+        return vec2f_lengthsqr(vec2f_sub(end, point));
     }
 
-    // The point is perpendicular somewhere along the length of the segment,
-    // so calculate its absolute distance
     vec2f_t projection = vec2f_add(start, vec2f_scalar_mul(delta, dot / lengthsqr));
-
-    return (optional_float_t) {true, vec2f_length(vec2f_sub(projection, point))};
+    return vec2f_lengthsqr(vec2f_sub(projection, point));
 }
 
-typedef struct {
-    const world_t *world;
-    vec2f_t point;
-    float half_snap;
-} world_find_edge_ctx_t;
 
-static optional_float_t is_edge_within_snap_distance(void *ctx, const edge_t *edge) {
-    const world_find_edge_ctx_t *find_edge_ctx = ctx;
-    const vertex_t *vertices = find_edge_ctx->world->vertices.data;
+uint32_t world_find_edge_at_position(const world_t *world, vec2f_t point, float within) {
+    const vertex_t *vertices = world->vertices.data;
+    const edge_t *edges = world->edges.data;
+    float tolerance_sqr = within * within;
+    uint32_t result = INDEX_NONE;
 
-    // Get perpendicular distance between this edge and the point
-    // If the perpendicular projection doesn't lie on the edge segment, the return value is invalid
-    optional_float_t distance = distance_edge_point(
-        vec2f_make_from_vec2i(vertices[edge->vertex_ids[0]].position),
-        vec2f_make_from_vec2i(vertices[edge->vertex_ids[1]].position),
-        find_edge_ctx->point
-    );
-
-    // If the return value is valid, but is too far away to be considered, invalidate it
-    if (distance.is_valid && distance.value > find_edge_ctx->half_snap) {
-        distance.is_valid = false;
+    for (uint32_t i = 0, num_edges = world->edges.size; i < num_edges; ++i) {
+        vec2f_t p0 = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[0]].position);
+        vec2f_t p1 = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[1]].position);
+        aabb2f_t edge_aabb = aabb2f_make_with_margin(p0, p1, within);
+        if (aabb2f_contains_point(edge_aabb, point)) {
+            float distance_sqr = edge_point_distancesqr(p0, p1, point);
+            if (distance_sqr <= tolerance_sqr) {
+                result = i;
+                tolerance_sqr = distance_sqr;
+            }
+        }
     }
-
-    return distance;
-}
-
-uint32_t world_find_edge_at_position(const world_t *world, vec2f_t point, uint32_t snap) {
-    return min_element_edge_by_optional_float_ctx(
-        world->edges.const_slice,
-        is_edge_within_snap_distance,
-        (optional_float_t) {false},
-        &(world_find_edge_ctx_t) {world, point, snap * 0.5f}
-    );
+    return result;
 }

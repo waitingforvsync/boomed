@@ -5,23 +5,22 @@
 #include <assert.h>
 #include "boomed/arena.h"
 
+#define ARENA_BLOCK_HEADER_SIZE (32U)
 #define ARENA_DEFAULT_BLOCK_SIZE (64 * 1024)
 
 // Arenas are coarse allocations from which smaller allocations are made in a stack-like manner.
 // Instead of freeing allocations individually, they may be freed in one go by resetting the arena.
 
-typedef union arena_block_header_t arena_block_header_t;
+typedef struct arena_block_header_t arena_block_header_t;
 
-union arena_block_header_t {
-    struct {
-        arena_block_header_t *prev;
-        arena_block_header_t *next;
-        uint32_t size;
-        uint32_t default_size;
-    };
-    uint8_t reserve[32];
+struct arena_block_header_t {
+    arena_block_header_t *prev;
+    arena_block_header_t *next;
+    uint32_t size;
+    uint32_t default_size;
 };
 
+static_assert(sizeof(arena_block_header_t) <= ARENA_BLOCK_HEADER_SIZE, "struct arena_block_header_t is too big");
 
 
 arena_t make_arena(void) {
@@ -76,7 +75,7 @@ void arena_init(arena_t *arena, uint32_t initial_size) {
 
     // Initialize arena struct members
     arena->base = block;
-    arena->offset = (uint32_t)sizeof(arena_block_header_t);
+    arena->offset = ARENA_BLOCK_HEADER_SIZE;
 }
 
 
@@ -105,7 +104,7 @@ void arena_deinit(arena_t *arena) {
 
 
 static inline uint32_t arena_get_aligned_size(uint32_t size) {
-    return (size + 15) & ~15;
+    return (size + 0x0F) & ~0x0F;
 }
 
 
@@ -134,18 +133,18 @@ void *arena_alloc(arena_t *arena, uint32_t size) {
     // If we got here, this is the case that we ran out of space in the current block
 
     // This is the minimum size of the block we will need in order to allocate this
-    uint32_t size_with_block_header = (uint32_t)sizeof(arena_block_header_t) + aligned_size;
+    uint32_t size_with_block_header = ARENA_BLOCK_HEADER_SIZE + aligned_size;
 
     // Check whether this is the first allocation in the block.
     // This could happen if we initialise an arena and then the first alloc is bigger than the initial block
     // If so, we can just reallocate the whole block.
     // Note we give this allocation a block to itself by allocating just enough and no more.
     // This gives it the ability to resize itself by reallocating the block, without affecting other allocs.
-    if (arena->offset == (uint32_t)sizeof(arena_block_header_t)) {
+    if (arena->offset == ARENA_BLOCK_HEADER_SIZE) {
         block = arena_insert_block(size_with_block_header, block);
         arena->base = block;
         arena->offset = size_with_block_header;
-        return (char *)block + sizeof(arena_block_header_t);
+        return (char *)block + ARENA_BLOCK_HEADER_SIZE;
     }
 
     // Check whether there is already a next block allocated.
@@ -164,7 +163,7 @@ void *arena_alloc(arena_t *arena, uint32_t size) {
     // And point the arena object at the new block
     arena->base = next_block;
     arena->offset = size_with_block_header;
-    return (char *)next_block + sizeof(arena_block_header_t);
+    return (char *)next_block + ARENA_BLOCK_HEADER_SIZE;
 }
 
 
@@ -197,8 +196,8 @@ void *arena_realloc(arena_t *arena, void *old_ptr, uint32_t old_size, uint32_t n
         }
 
         // If it doesn't fit, but is the only allocation in the block, just reallocate the block
-        if ((char *)old_ptr - (char *)block == sizeof(arena_block_header_t)) {
-            arena_block_header_t *new_block = realloc(block, new_aligned_size + sizeof(arena_block_header_t));
+        if ((char *)old_ptr - (char *)block == ARENA_BLOCK_HEADER_SIZE) {
+            arena_block_header_t *new_block = realloc(block, new_aligned_size + ARENA_BLOCK_HEADER_SIZE);
             if (!new_block) {
                 abort();
             }
@@ -208,7 +207,7 @@ void *arena_realloc(arena_t *arena, void *old_ptr, uint32_t old_size, uint32_t n
             if (new_block->next) {
                 new_block->next->prev = new_block;
             }
-            return (char *)new_block + sizeof(arena_block_header_t);
+            return (char *)new_block + ARENA_BLOCK_HEADER_SIZE;
         }
     }
 
@@ -242,7 +241,7 @@ void arena_reset(arena_t *arena) {
     }
 
     arena->base = block;
-    arena->offset = (uint32_t)sizeof(arena_block_header_t);
+    arena->offset = ARENA_BLOCK_HEADER_SIZE;
 }
 
 

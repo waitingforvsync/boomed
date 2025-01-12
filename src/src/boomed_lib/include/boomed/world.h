@@ -1,7 +1,7 @@
 #ifndef BOOMED_WORLD_H_
 #define BOOMED_WORLD_H_
 
-#include "boomed/math/vec2i.h"
+#include "boomed/math/vec2f.h"
 #include "boomed/generic/array.h"
 #include "boomed/arena.h"
 
@@ -11,7 +11,6 @@ typedef struct edge_t edge_t;
 typedef struct contour_t contour_t;
 typedef struct zone_t zone_t;
 typedef struct world_t world_t;
-typedef struct world_ctx_t world_ctx_t;
 
 typedef uint16_t element_id_t;
 DEF_ARRAY(element_id, element_id_t)
@@ -107,10 +106,15 @@ void world_init(world_t *world);
 void world_deinit(world_t *world);
 
 
-element_id_t world_add_vertex(world_t *world, element_id_t index, vec2i_t position);
+element_id_t world_push_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena);
 void world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t new_index);
-void world_remove_vertex(world_t *world, element_id_t index);
+void world_pop_vertex(world_t *world);
 
+element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t *id_arena);
+void world_reindex_edge(world_t *world, element_id_t old_index, element_id_t new_index);
+
+uint32_t world_find_vertex_at_position(const world_t *world, vec2f_t point, float within);
+uint32_t world_find_edge_at_position(const world_t *world, vec2f_t point, float within);
 
 
 #endif // ifndef BOOMED_WORLD_H_
