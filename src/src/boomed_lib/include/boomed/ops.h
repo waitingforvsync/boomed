@@ -35,10 +35,9 @@ struct op_t {
     };
 };
 
-DEF_ARRAY(op, op_t)
 
 
-uint32_t do_compound_op(boomed_t *boomed, slice_op_t slice, uint32_t index);
-uint32_t undo_compound_op(boomed_t *boomed, slice_op_t slice, uint32_t index);
+uint32_t do_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
+uint32_t undo_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
 
 #endif // ifndef BOOMED_OPS_H_

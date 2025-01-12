@@ -14,19 +14,17 @@ void world_init(world_t *world) {
     world->id_arena = make_arena();
     world->temp_id_arena = make_arena();
 
-    world->vertices = make_array_vertex(&world->vertex_arena, 256);
-    world->edges = make_array_edge(&world->edge_arena, 256);
-    world->zones = make_array_zone(&world->zone_arena, 256);
+    array_init(world->vertices, 4096, &world->vertex_arena);
+    array_init(world->edges, 4096, &world->edge_arena);
+    array_init(world->zones, 4096, &world->zone_arena);
 
     //--- test code
-    array_vertex_resize(&world->vertices, &world->vertex_arena, 3);
-    world->vertices.data[0] = (vertex_t){.position = {0, 0}};
-    world->vertices.data[1] = (vertex_t){.position = {100, 0}};
-    world->vertices.data[2] = (vertex_t){.position = {0, 25}};
+    array_add(world->vertices, (vertex_t){.position = {0, 0}});
+    array_add(world->vertices, (vertex_t){.position = {100, 0}});
+    array_add(world->vertices, (vertex_t){.position = {0, 25}});
 
-    array_edge_resize(&world->edges, &world->edge_arena, 2);
-    world->edges.data[0] = (edge_t){.vertex_ids = {0, 1}};
-    world->edges.data[1] = (edge_t){.vertex_ids = {0, 2}};
+    array_add(world->edges, (edge_t){.vertex_ids = {0, 1}});
+    array_add(world->edges, (edge_t){.vertex_ids = {0, 2}});
     //--- end test code
 }
 
@@ -40,13 +38,24 @@ void world_deinit(world_t *world) {
 }
 
 
+element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena) {
+    element_id_t vertex_id = (element_id_t)array_add(
+        world->vertices,
+        (vertex_t){
+            .position = position
+        }
+    );
+    return vertex_id;
+}
+
+
 
 uint32_t world_find_vertex_at_position(const world_t *world, vec2f_t point, float within) {
-    const vertex_t *vertices = world->vertices.data;
+    const vertex_t *vertices = world->vertices;
     float tolerance_sqr = within * within;
     uint32_t result = INDEX_NONE;
 
-    for (uint32_t i = 0, num_vertices = world->vertices.size; i < num_vertices; ++i) {
+    for (uint32_t i = 0; i < world->vertices_num; ++i) {
         float distance_sqr = vec2f_lengthsqr(vec2f_sub(point, vec2f_make_from_vec2i(vertices[i].position)));
         if (distance_sqr <= tolerance_sqr) {
             result = i;
@@ -81,12 +90,12 @@ static float edge_point_distancesqr(vec2f_t start, vec2f_t end, vec2f_t point) {
 
 
 uint32_t world_find_edge_at_position(const world_t *world, vec2f_t point, float within) {
-    const vertex_t *vertices = world->vertices.data;
-    const edge_t *edges = world->edges.data;
+    const vertex_t *vertices = world->vertices;
+    const edge_t *edges = world->edges;
     float tolerance_sqr = within * within;
     uint32_t result = INDEX_NONE;
 
-    for (uint32_t i = 0, num_edges = world->edges.size; i < num_edges; ++i) {
+    for (uint32_t i = 0; i < world->edges_num; ++i) {
         vec2f_t p0 = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[0]].position);
         vec2f_t p1 = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[1]].position);
         aabb2f_t edge_aabb = aabb2f_make_with_margin(p0, p1, within);

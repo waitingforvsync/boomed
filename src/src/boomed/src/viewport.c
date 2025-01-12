@@ -156,23 +156,23 @@ static void viewport_draw_grid(const viewport_t *viewport) {
 
 static void viewport_draw_zones(const viewport_t *viewport) {
     const world_t *world = viewport->world;
-    const vertex_t *vertices = world->vertices.data;
-    const zone_t *zones = world->zones.data;
+    const vertex_t *vertices = world->vertices;
+    const zone_t *zones = world->zones;
 
     aabb2f_t viewport_aabb = aabb2f_make(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),
         mat23f_vec2f_mul(viewport->viewport_to_world, viewport->size)
     );
 
-    for (uint32_t i = 0, num_zones = world->zones.size; i < num_zones; ++i) {
-        
+    for (uint32_t i = 0; i < world->zones_num; ++i) {
+
     }
 }
 
 static void viewport_draw_edges(const viewport_t *viewport) {
     const world_t *world = viewport->world;
-    const vertex_t *vertices = world->vertices.data;
-    const edge_t *edges = world->edges.data;
+    const vertex_t *vertices = world->vertices;
+    const edge_t *edges = world->edges;
 
     aabb2f_t viewport_aabb = aabb2f_make_with_margin(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),
@@ -180,7 +180,7 @@ static void viewport_draw_edges(const viewport_t *viewport) {
         VIEWPORT_EDGE_THICKNESS / viewport->zoom
     );
 
-    for (uint32_t i = 0, num_edges = world->edges.size; i < num_edges; ++i) {
+    for (uint32_t i = 0; i < world->edges_num; ++i) {
         vec2f_t world_start_pos = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[0]].position);
         vec2f_t world_end_pos   = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[1]].position);
         if (aabb2f_intersects(viewport_aabb, aabb2f_make(world_start_pos, world_end_pos))) {
@@ -196,7 +196,7 @@ static void viewport_draw_edges(const viewport_t *viewport) {
 
 static void viewport_draw_vertices(const viewport_t *viewport) {
     const world_t *world = viewport->world;
-    const vertex_t *vertices = world->vertices.data;
+    const vertex_t *vertices = world->vertices;
 
     aabb2f_t viewport_aabb = aabb2f_make_with_margin(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),
@@ -204,7 +204,7 @@ static void viewport_draw_vertices(const viewport_t *viewport) {
         VIEWPORT_VERTEX_RADIUS / viewport->zoom
     );
 
-    for (uint32_t i = 0, num_vertices = world->vertices.size; i < num_vertices; ++i) {
+    for (uint32_t i = 0; i < world->vertices_num; ++i) {
         vec2f_t world_pos = vec2f_make_from_vec2i(vertices[i].position);
         if (aabb2f_contains_point(viewport_aabb, world_pos)) {
             vec2f_t viewport_pos = mat23f_vec2f_mul(viewport->world_to_viewport, world_pos);

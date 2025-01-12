@@ -46,22 +46,22 @@ op_fn_t op_fns[] = {
 };
 
 
-uint32_t do_compound_op(boomed_t *boomed, slice_op_t ops, uint32_t index) {
-    assert(ops.data[index].type == op_type_sentinel);
-    if (index != ops.size - 1) {
-        for (++index; ops.data[index].type != op_type_sentinel; ++index) {
-            op_fns[ops.data[index].type].do_fn(ops.data + index, boomed);
+uint32_t do_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index) {
+    assert(ops[index].type == op_type_sentinel);
+    if (index != ops_num - 1) {
+        for (++index; ops[index].type != op_type_sentinel; ++index) {
+            op_fns[ops[index].type].do_fn(ops + index, boomed);
         }
     }
     return index;
 }
 
 
-uint32_t undo_compound_op(boomed_t *boomed, slice_op_t ops, uint32_t index) {
-    assert(ops.data[index].type == op_type_sentinel);
+uint32_t undo_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index) {
+    assert(ops[index].type == op_type_sentinel);
     if (index != 0) {
-        for (--index; ops.data[index].type != op_type_sentinel; --index) {
-            op_fns[ops.data[index].type].undo_fn(ops.data + index, boomed);
+        for (--index; ops[index].type != op_type_sentinel; --index) {
+            op_fns[ops[index].type].undo_fn(ops + index, boomed);
         }
     }
     return index;

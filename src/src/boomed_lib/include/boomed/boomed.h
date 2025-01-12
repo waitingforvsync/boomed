@@ -9,7 +9,7 @@ typedef struct boomed_t boomed_t;
 
 struct boomed_t {
     arena_t ops_arena;
-    array_op_t ops;
+    array_t(op_t, ops);
     world_t world;
 };
 

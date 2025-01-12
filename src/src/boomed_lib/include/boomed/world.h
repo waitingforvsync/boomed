@@ -2,7 +2,7 @@
 #define BOOMED_WORLD_H_
 
 #include "boomed/math/vec2f.h"
-#include "boomed/generic/array.h"
+#include "boomed/array.h"
 #include "boomed/arena.h"
 
 
@@ -11,9 +11,7 @@ typedef struct edge_t edge_t;
 typedef struct contour_t contour_t;
 typedef struct zone_t zone_t;
 typedef struct world_t world_t;
-
 typedef uint16_t element_id_t;
-DEF_ARRAY(element_id, element_id_t)
 
 
 // Define structs relating to the world.
@@ -34,10 +32,8 @@ DEF_ARRAY(element_id, element_id_t)
 // Vertices have a 2D integer position and maintain an array of the edge IDs which connect to them.
 struct vertex_t {
     vec2i_t position;
-    array_element_id_t edge_ids;
+    array_t(element_id_t, edge_ids);
 };
-
-DEF_ARRAY(vertex, vertex_t)
 
 
 // Representation of an edge in the world.
@@ -55,18 +51,13 @@ struct edge_t {
     uint8_t lower_colour;
 };
 
-DEF_ARRAY(edge, edge_t)
-
 
 // A contour is just an array of edge IDs.
 // Contours are used to define zone perimeters and also any holes which may be present within a zone.
 // A perimeter contour is defined in clockwise order, while a hole contour is defined in counter-clockwise order.
 struct contour_t {
-    array_element_id_t edge_ids;
+    array_t(element_id_t, edge_ids);
 };
-
-DEF_ARRAY(contour, contour_t)
-
 
 
 // A zone is the irregular polygon formed by a closed contour of edges.
@@ -75,8 +66,8 @@ DEF_ARRAY(contour, contour_t)
 // Zones maintain a hierarchy of which other zones exist within them and which zone they themselves are within.
 struct zone_t {
     contour_t perimeter;
-    array_contour_t holes;
-    array_element_id_t inner_zone_ids;
+    array_t(contour_t, holes);
+    array_t(element_id_t, inner_zone_ids);
     element_id_t outer_zone_id;
     uint8_t floor_height;
     uint8_t ceiling_height;
@@ -84,15 +75,13 @@ struct zone_t {
     uint8_t ceiling_colour;
 };
 
-DEF_ARRAY(zone, zone_t)
-
 
 // This is the world, composed of vertices, edges and zones.
 // Here we maintain a number of arenas used for dynamically allocating these elements.
 struct world_t {
-    array_vertex_t vertices;
-    array_edge_t edges;
-    array_zone_t zones;
+    array_t(vertex_t, vertices);
+    array_t(edge_t, edges);
+    array_t(zone_t, zones);
 
     arena_t vertex_arena;
     arena_t edge_arena;
@@ -106,9 +95,9 @@ void world_init(world_t *world);
 void world_deinit(world_t *world);
 
 
-element_id_t world_push_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena);
+element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena);
 void world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t new_index);
-void world_pop_vertex(world_t *world);
+void world_remove_vertex(world_t *world);
 
 element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t *id_arena);
 void world_reindex_edge(world_t *world, element_id_t old_index, element_id_t new_index);
