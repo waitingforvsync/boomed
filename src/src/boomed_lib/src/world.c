@@ -50,7 +50,7 @@ static element_id_t edge_get_other_vertex(const edge_t *edge, element_id_t verte
 }
 
 
-static element_id_t world_get_contour_start_vertex(const world_t *world, const contour_t *contour) {
+static element_id_t contour_get_start_vertex(const contour_t *contour, const world_t *world) {
     assert(contour->edge_ids_num > 2);
     const edge_t *start_edge = world->edges + contour->edge_ids[0];
     const edge_t *next_edge = world->edges + contour->edge_ids[1];
@@ -65,9 +65,9 @@ static element_id_t world_get_contour_start_vertex(const world_t *world, const c
 }
 
 
-static const element_id_t *world_get_contour_vertices(const world_t *world, const contour_t *contour, arena_t *arena) {
+static const element_id_t *contour_get_vertices(const contour_t *contour, const world_t *world, arena_t *arena) {
     element_id_t *vertex_ids = arena_new_n(element_id_t, contour->edge_ids_num, arena);
-    element_id_t vertex_id = world_get_contour_start_vertex(world, contour);
+    element_id_t vertex_id = contour_get_start_vertex(contour, world);
     for (uint32_t i = 0; i < contour->edge_ids_num; ++i) {
         vertex_ids[i] = vertex_id;
         vertex_id = edge_get_other_vertex(world->edges + contour->edge_ids[i], vertex_id);
@@ -127,6 +127,7 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
     }
     // TODO
 }
+
 
 element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t *id_arena) {
     element_id_t edge_id = (element_id_t)array_add(
@@ -189,7 +190,7 @@ static float edge_point_distancesqr(vec2f_t start, vec2f_t end, vec2f_t point) {
     float lengthsqr = vec2f_lengthsqr(delta);
     if (lengthsqr == 0.0f) {
         // We don't expect zero length edges -
-        // But if they occur, the distance is simply the distance from point to either edge point
+        // But if they occur, the distance is simply the distance from point to the coincident endpoints
         return vec2f_lengthsqr(vec2f_sub(start, point));
     }
 

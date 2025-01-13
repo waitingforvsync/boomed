@@ -20,6 +20,8 @@ static world_t world = {0};
 
 static viewport_t viewport = {
 	.world = &world,
+	.highlighted_vertex = ID_NONE,
+	.highlighted_edge = ID_NONE,
 	.zoom = 2.0f
 };
 
