@@ -6,6 +6,7 @@
 
 typedef struct viewport_t viewport_t;
 typedef struct world_t world_t;
+typedef uint16_t element_id_t;
 
 struct viewport_t {
     world_t *world;
@@ -16,6 +17,8 @@ struct viewport_t {
     vec2f_t pan_initial_viewport_pos;
     vec2f_t pan_initial_world_pos;
     vec2f_t action_initial_world_pos;
+    element_id_t highlighted_vertex;
+    element_id_t highlighted_edge;
     float zoom;
     bool is_panning;
     bool is_dragging;
@@ -30,6 +33,7 @@ void viewport_pan_stop(viewport_t *viewport, vec2f_t viewport_pos);
 void viewport_action_start(viewport_t *viewport, vec2f_t viewport_pos);
 void viewport_action_move(viewport_t *viewport, vec2f_t viewport_pos);
 void viewport_action_stop(viewport_t *viewport, vec2f_t viewport_pos);
+void viewport_update_mouse_pos(viewport_t *viewport, vec2f_t viewport_pos);
 void viewport_set_zoom(viewport_t *viewport, vec2f_t viewport_pos, float zoom_delta);
 void viewport_command_undo(viewport_t *viewport);
 void viewport_command_redo(viewport_t *viewport);

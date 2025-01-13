@@ -20,7 +20,7 @@ void world_init(world_t *world) {
 
     //--- test code
     array_add(world->vertices, (vertex_t){.position = {0, 0}});
-    array_add(world->vertices, (vertex_t){.position = {100, 0}});
+    array_add(world->vertices, (vertex_t){.position = {100, 25}});
     array_add(world->vertices, (vertex_t){.position = {0, 25}});
 
     array_add(world->edges, (edge_t){.vertex_ids = {0, 1}});
@@ -38,6 +38,53 @@ void world_deinit(world_t *world) {
 }
 
 
+static element_id_t edge_get_other_vertex(const edge_t *edge, element_id_t vertex_id) {
+    assert(vertex_id != ID_NONE);
+    if (vertex_id == edge->vertex_ids[0]) {
+        return edge->vertex_ids[1];
+    }
+    else if (vertex_id == edge->vertex_ids[1]) {
+        return edge->vertex_ids[0];
+    }
+    return ID_NONE;
+}
+
+
+static element_id_t world_get_contour_start_vertex(const world_t *world, const contour_t *contour) {
+    assert(contour->edge_ids_num > 2);
+    const edge_t *start_edge = world->edges + contour->edge_ids[0];
+    const edge_t *next_edge = world->edges + contour->edge_ids[1];
+
+    if (start_edge->vertex_ids[0] == next_edge->vertex_ids[0] || start_edge->vertex_ids[0] == next_edge->vertex_ids[1]) {
+        return start_edge->vertex_ids[1];
+    }
+    else if (start_edge->vertex_ids[1] == next_edge->vertex_ids[0] || start_edge->vertex_ids[1] == next_edge->vertex_ids[1]) {
+        return start_edge->vertex_ids[0];
+    }
+    return ID_NONE;
+}
+
+
+static const element_id_t *world_get_contour_vertices(const world_t *world, const contour_t *contour, arena_t *arena) {
+    element_id_t *vertex_ids = arena_new_n(element_id_t, contour->edge_ids_num, arena);
+    element_id_t vertex_id = world_get_contour_start_vertex(world, contour);
+    for (uint32_t i = 0; i < contour->edge_ids_num; ++i) {
+        vertex_ids[i] = vertex_id;
+        vertex_id = edge_get_other_vertex(world->edges + contour->edge_ids[i], vertex_id);
+    }
+    return vertex_ids;
+}
+
+
+static void world_replace_ids(element_id_t *ids, uint32_t ids_num, element_id_t from, element_id_t to) {
+    for (uint32_t i = 0; i < ids_num; ++i) {
+        if (ids[i] == from) {
+            ids[i] = to;
+        }
+    }
+}
+
+
 element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena) {
     element_id_t vertex_id = (element_id_t)array_add(
         world->vertices,
@@ -49,16 +96,87 @@ element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_
 }
 
 
+bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t new_index) {
+    if (!array_is_empty(world->vertices[new_index].edge_ids)) {
+        // It's an error if we use a vertex which still has edges connected to it
+        return false;
+    }
 
-uint32_t world_find_vertex_at_position(const world_t *world, vec2f_t point, float within) {
+    for (uint32_t i = 0; i < world->edges_num; ++i) {
+        world_replace_ids(world->edges[i].vertex_ids, 2, old_index, new_index);
+    }
+
+    for (uint32_t i = 0; i < world->zones_num; ++i) {
+        zone_t *zone = world->zones + i;
+        world_replace_ids(zone->perimeter.edge_ids, zone->perimeter.edge_ids_num, old_index, new_index);
+        for (uint32_t j = 0; j < zone->holes_num; ++j) {
+            world_replace_ids(zone->holes[j].edge_ids, zone->holes[j].edge_ids_num, old_index, new_index);
+        }
+    }
+
+    world->vertices[new_index] = world->vertices[old_index];
+    return true;
+}
+
+
+static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, element_id_t edge_id, arena_t *id_arena) {
+    // Insert the edge such that the array of edges is ordered clockwise
+    vertex_t *vertex = world->vertices + vertex_id;
+    if (!array_is_valid(vertex->edge_ids)) {
+        array_init(vertex->edge_ids, 16, id_arena);
+    }
+    // TODO
+}
+
+element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t *id_arena) {
+    element_id_t edge_id = (element_id_t)array_add(
+        world->edges,
+        (edge_t){
+            .vertex_ids = {v0, v1},
+            .zone_ids = {ID_NONE, ID_NONE},
+            .lower_colour = lower_colour,
+            .upper_colour = upper_colour
+        }
+    );
+    world_add_vertex_edge(world, v0, edge_id, id_arena);
+    world_add_vertex_edge(world, v1, edge_id, id_arena);
+    return edge_id;
+}
+
+
+
+aabb2f_t world_get_edge_aabb(const world_t *world, element_id_t edge_id) {
+    const vertex_t *vertices = world->vertices;
+    const edge_t *edges = world->edges;
+
+    vec2f_t world_start_pos = vec2f_make_from_vec2i(vertices[edges[edge_id].vertex_ids[0]].position);
+    vec2f_t world_end_pos   = vec2f_make_from_vec2i(vertices[edges[edge_id].vertex_ids[1]].position);
+    return aabb2f_make(world_start_pos, world_end_pos);
+}
+
+
+aabb2f_t world_get_zone_aabb(const world_t *world, element_id_t zone_id) {
+    const vertex_t *vertices = world->vertices;
+    const zone_t *zones = world->zones;
+    const element_id_t *edge_ids = zones[zone_id].perimeter.edge_ids;
+
+    aabb2f_t aabb = world_get_edge_aabb(world, edge_ids[0]);
+    for (uint32_t i = 1; i < zones[zone_id].perimeter.edge_ids_num; ++i) {
+        aabb = aabb2f_union(aabb, world_get_edge_aabb(world, edge_ids[i]));
+    }
+    return aabb;
+}
+
+
+element_id_t world_find_vertex_at_position(const world_t *world, vec2f_t point, float within) {
     const vertex_t *vertices = world->vertices;
     float tolerance_sqr = within * within;
-    uint32_t result = INDEX_NONE;
+    element_id_t result = ID_NONE;
 
     for (uint32_t i = 0; i < world->vertices_num; ++i) {
         float distance_sqr = vec2f_lengthsqr(vec2f_sub(point, vec2f_make_from_vec2i(vertices[i].position)));
         if (distance_sqr <= tolerance_sqr) {
-            result = i;
+            result = (element_id_t)i;
             tolerance_sqr = distance_sqr;
         }
     }
@@ -89,11 +207,11 @@ static float edge_point_distancesqr(vec2f_t start, vec2f_t end, vec2f_t point) {
 }
 
 
-uint32_t world_find_edge_at_position(const world_t *world, vec2f_t point, float within) {
+element_id_t world_find_edge_at_position(const world_t *world, vec2f_t point, float within) {
     const vertex_t *vertices = world->vertices;
     const edge_t *edges = world->edges;
     float tolerance_sqr = within * within;
-    uint32_t result = INDEX_NONE;
+    element_id_t result = ID_NONE;
 
     for (uint32_t i = 0; i < world->edges_num; ++i) {
         vec2f_t p0 = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[0]].position);
@@ -102,7 +220,7 @@ uint32_t world_find_edge_at_position(const world_t *world, vec2f_t point, float 
         if (aabb2f_contains_point(edge_aabb, point)) {
             float distance_sqr = edge_point_distancesqr(p0, p1, point);
             if (distance_sqr <= tolerance_sqr) {
-                result = i;
+                result = (element_id_t)i;
                 tolerance_sqr = distance_sqr;
             }
         }

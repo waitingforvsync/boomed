@@ -119,6 +119,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 			else if (event->motion.state & SDL_BUTTON_LMASK) {
 				viewport_action_move(&viewport, (vec2f_t){event->motion.x, event->motion.y});
 			}
+			viewport_update_mouse_pos(&viewport, (vec2f_t){event->motion.x, event->motion.y});
 			break;
 		
 		case SDL_EVENT_MOUSE_WHEEL:

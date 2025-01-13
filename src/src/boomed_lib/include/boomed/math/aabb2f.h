@@ -45,5 +45,12 @@ static inline aabb2f_t aabb2f_union(aabb2f_t a, aabb2f_t b) {
     };
 }
 
+static inline aabb2f_t aabb2f_vec2f_union(aabb2f_t a, vec2f_t b) {
+    return (aabb2f_t){
+        vec2f_component_min(a.min, b),
+        vec2f_component_max(a.max, b)
+    };
+}
+
 
 #endif // BOOMED_MATH_AABB2F_H_

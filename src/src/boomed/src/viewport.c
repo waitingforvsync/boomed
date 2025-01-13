@@ -68,6 +68,16 @@ void viewport_action_stop(viewport_t *viewport, vec2f_t viewport_pos) {
 }
 
 
+void viewport_update_mouse_pos(viewport_t *viewport, vec2f_t viewport_pos) {
+    vec2f_t world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, viewport_pos);
+    viewport->highlighted_vertex = world_find_vertex_at_position(viewport->world, world_pos, 10.0f / viewport->zoom);
+    viewport->highlighted_edge = ID_NONE;
+    if (viewport->highlighted_vertex == ID_NONE) {
+        viewport->highlighted_edge = world_find_edge_at_position(viewport->world, world_pos, 6.0f / viewport->zoom);
+    }
+}
+
+
 void viewport_set_zoom(viewport_t *viewport, vec2f_t viewport_pos, float zoom_delta) {
     float old_zoom = viewport->zoom;
     viewport->zoom *= powf(1.25f, zoom_delta);
@@ -154,6 +164,7 @@ static void viewport_draw_grid(const viewport_t *viewport) {
 #define VIEWPORT_VERTEX_RADIUS 6
 #define VIEWPORT_EDGE_THICKNESS 3
 
+
 static void viewport_draw_zones(const viewport_t *viewport) {
     const world_t *world = viewport->world;
     const vertex_t *vertices = world->vertices;
@@ -165,7 +176,6 @@ static void viewport_draw_zones(const viewport_t *viewport) {
     );
 
     for (uint32_t i = 0; i < world->zones_num; ++i) {
-
     }
 }
 
@@ -188,7 +198,7 @@ static void viewport_draw_edges(const viewport_t *viewport) {
                 mat23f_vec2f_mul(viewport->world_to_viewport, world_start_pos),
                 mat23f_vec2f_mul(viewport->world_to_viewport, world_end_pos),
                 VIEWPORT_EDGE_THICKNESS,
-                0xFF000000
+                (i == viewport->highlighted_edge) ? 0xFF0000FF : 0xFF000000
             );
         }
     }
@@ -211,7 +221,7 @@ static void viewport_draw_vertices(const viewport_t *viewport) {
             draw_point(
                 viewport_pos,
                 VIEWPORT_VERTEX_RADIUS,
-                0xFF300030
+                (i == viewport->highlighted_vertex) ? 0xFF0000FF : 0xFF000000
             );
         }
     }
