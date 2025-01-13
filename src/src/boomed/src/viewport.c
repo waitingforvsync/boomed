@@ -9,7 +9,7 @@ static void viewport_calc_transforms(viewport_t *viewport) {
     viewport->world_to_viewport = mat23f_mul(
         mat23f_mat22f_mul(
             mat23f_make_transform(vec2f_scalar_mul(viewport->size, 0.5f)),
-            (mat22f_t){.x = {0.0f, -viewport->zoom}, .y = {viewport->zoom, 0.0f}}
+            (mat22f_t){{0.0f, -viewport->zoom}, {viewport->zoom, 0.0f}}
         ),
         mat23f_make_transform(vec2f_negate(viewport->focus_world_pos))
     );

@@ -14,17 +14,20 @@ void world_init(world_t *world) {
     world->id_arena = make_arena();
     world->temp_id_arena = make_arena();
 
-    array_init(world->vertices, 4096, &world->vertex_arena);
-    array_init(world->edges, 4096, &world->edge_arena);
-    array_init(world->zones, 4096, &world->zone_arena);
+    array_init_reserve(world->vertices, &world->vertex_arena, 4096);
+    array_init_reserve(world->edges, &world->edge_arena, 4096);
+    array_init_reserve(world->zones, &world->zone_arena, 4096);
 
     //--- test code
-    array_add(world->vertices, (vertex_t){.position = {0, 0}});
-    array_add(world->vertices, (vertex_t){.position = {100, 25}});
-    array_add(world->vertices, (vertex_t){.position = {0, 25}});
+    array_resize(world->vertices, &world->vertex_arena, 3);
+    world->vertices[0] = (vertex_t) {.position = {0, 0}};
+    world->vertices[1] = (vertex_t) {.position = {112, 32}};
+    world->vertices[2] = (vertex_t) {.position = {0, 32}};
+    array_add(world->vertices, &world->vertex_arena, (vertex_t) {.position = {64, -32}});
 
-    array_add(world->edges, (edge_t){.vertex_ids = {0, 1}});
-    array_add(world->edges, (edge_t){.vertex_ids = {0, 2}});
+    array_resize(world->edges, &world->edge_arena, 2);
+    world->edges[0] = (edge_t) {.vertex_ids = {0, 1}};
+    world->edges[1] = (edge_t) {.vertex_ids = {0, 2}};
     //--- end test code
 }
 
@@ -84,10 +87,10 @@ const element_id_t *contour_get_vertices(const contour_t *contour, const edge_t 
 
 contour_t contour_make(const vertex_t vertices[], const edge_t edges[], element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena) {
     contour_t contour = {0};
-    array_init(contour.edge_ids, 32, arena);
+    array_reserve(contour.edge_ids, arena, 64);
 
     element_id_t vertex_id = start_vertex_id;
-    array_add(contour.edge_ids, edge_id);
+    array_add(contour.edge_ids, arena, edge_id);
 
     while (!array_is_empty(contour.edge_ids)) {
         vertex_id = edge_get_other_vertex(&edges[edge_id], vertex_id);
@@ -101,7 +104,7 @@ contour_t contour_make(const vertex_t vertices[], const edge_t edges[], element_
             array_pop(contour.edge_ids);
         }
         else {
-            array_add(contour.edge_ids, edge_id);
+            array_add(contour.edge_ids, arena, edge_id);
         }
     }
     return contour;
@@ -120,6 +123,7 @@ static void world_replace_ids(element_id_t ids[], uint32_t ids_num, element_id_t
 element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena) {
     element_id_t vertex_id = (element_id_t)array_add(
         world->vertices,
+        vertex_arena,
         (vertex_t){
             .position = position
         }
@@ -169,7 +173,7 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
     // Insert the edge such that the array of edges is ordered clockwise
     vertex_t *vertex = &vertices[vertex_id];
     if (!array_is_valid(vertex->edge_ids)) {
-        array_init(vertex->edge_ids, 16, id_arena);
+        array_reserve(vertex->edge_ids, id_arena, 16);
     }
 
     element_id_t v0 = edge_get_other_vertex(&edges[edge_id], vertex_id);
@@ -194,6 +198,7 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
 element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t *id_arena) {
     element_id_t edge_id = (element_id_t)array_add(
         world->edges,
+        edge_arena,
         (edge_t){
             .vertex_ids = {v0, v1},
             .zone_ids = {ID_NONE, ID_NONE},
