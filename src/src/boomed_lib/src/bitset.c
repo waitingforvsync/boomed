@@ -1,8 +1,9 @@
 #include "boomed/bitset.h"
+#include "boomed/arena.h"
 
 
 bitset_t make_bitset(uint32_t initial_capacity, arena_t *arena) {
-    bitset_t bitset;
+    bitset_t bitset = {0};
     bitset_init(&bitset, initial_capacity, arena);
     return bitset;
 }

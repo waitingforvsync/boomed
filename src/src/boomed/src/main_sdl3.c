@@ -203,7 +203,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
 }
 
 
-SDL_FColor fcolor_make_from_packed_rgba(uint32_t color) {
+static SDL_FColor fcolor_make_from_packed_rgba(uint32_t color) {
 	return (SDL_FColor){
 		(color & 0xFF) / 255.0f,
 		((color >> 8) & 0xFF) / 255.0f,
@@ -243,9 +243,9 @@ void draw_thick_line(vec2f_t start, vec2f_t end, float width, uint32_t color) {
 }
 
 
-void draw_point(vec2f_t centre, float radius, uint32_t color) {
-	
-	#define NUM_POINT_VERTICES 10
+#define NUM_POINT_VERTICES 10
+
+void draw_point(vec2f_t centre, float radius, uint32_t color) {	
 	vec2f_t vertex_pos[NUM_POINT_VERTICES];
 	for (int i = 0; i < NUM_POINT_VERTICES; i++) {
 		float angle = deg_to_rad(i * (360.0f / NUM_POINT_VERTICES));

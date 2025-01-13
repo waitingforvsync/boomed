@@ -70,10 +70,24 @@ void viewport_action_stop(viewport_t *viewport, vec2f_t viewport_pos) {
 
 void viewport_update_mouse_pos(viewport_t *viewport, vec2f_t viewport_pos) {
     vec2f_t world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, viewport_pos);
-    viewport->highlighted_vertex = world_find_vertex_at_position(viewport->world, world_pos, 10.0f / viewport->zoom);
+    const world_t *world = viewport->world;
+
     viewport->highlighted_edge = ID_NONE;
+    viewport->highlighted_vertex = vertex_find_closest_to_point(
+        world->vertices,
+        world->vertices_num,
+        world_pos,
+        10.0f / viewport->zoom
+    );
+
     if (viewport->highlighted_vertex == ID_NONE) {
-        viewport->highlighted_edge = world_find_edge_at_position(viewport->world, world_pos, 6.0f / viewport->zoom);
+        viewport->highlighted_edge = edge_find_closest_to_point(
+            world->edges,
+            world->edges_num,
+            world->vertices,
+            world_pos,
+            6.0f / viewport->zoom
+        );
     }
 }
 
@@ -191,12 +205,10 @@ static void viewport_draw_edges(const viewport_t *viewport) {
     );
 
     for (uint32_t i = 0; i < world->edges_num; ++i) {
-        vec2f_t world_start_pos = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[0]].position);
-        vec2f_t world_end_pos   = vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[1]].position);
-        if (aabb2f_intersects(viewport_aabb, aabb2f_make(world_start_pos, world_end_pos))) {
+        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edges + i, vertices))) {
             draw_thick_line(
-                mat23f_vec2f_mul(viewport->world_to_viewport, world_start_pos),
-                mat23f_vec2f_mul(viewport->world_to_viewport, world_end_pos),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[0]].position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices[edges[i].vertex_ids[1]].position)),
                 VIEWPORT_EDGE_THICKNESS,
                 (i == viewport->highlighted_edge) ? 0xFF0000FF : 0xFF000000
             );
@@ -228,9 +240,8 @@ static void viewport_draw_vertices(const viewport_t *viewport) {
 }
 
 void viewport_render(const viewport_t *viewport) {
-    const world_t *world = viewport->world;
-    viewport_draw_grid(viewport);
     viewport_draw_zones(viewport);
+    viewport_draw_grid(viewport);
     viewport_draw_edges(viewport);
     viewport_draw_vertices(viewport);
 }

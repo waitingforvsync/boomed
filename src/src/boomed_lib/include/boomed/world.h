@@ -107,11 +107,16 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
 bool world_reindex_edge(world_t *world, element_id_t old_id, element_id_t new_id);
 bool world_remove_last_edge(world_t *world);
 
-aabb2f_t world_get_edge_aabb(const world_t *world, element_id_t edge_id);
-aabb2f_t world_get_zone_aabb(const world_t *world, element_id_t zone_id);
 
-element_id_t world_find_vertex_at_position(const world_t *world, vec2f_t point, float within);
-element_id_t world_find_edge_at_position(const world_t *world, vec2f_t point, float within);
+element_id_t vertex_find_closest_to_point(const vertex_t vertices[], uint32_t num_vertices, vec2f_t point, float within);
+
+aabb2f_t edge_get_aabb(const edge_t *edge, const vertex_t vertices[]);
+element_id_t edge_find_closest_to_point(const edge_t edges[], uint32_t num_edges, const vertex_t vertices[], vec2f_t point, float within);
+
+const element_id_t *contour_get_vertices(const contour_t *contour, const edge_t edges[], arena_t *arena);
+
+aabb2f_t zone_get_aabb(const zone_t *zone, const edge_t edges[], const vertex_t vertices[]);
+
 
 
 #endif // ifndef BOOMED_WORLD_H_
