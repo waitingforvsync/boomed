@@ -16,10 +16,10 @@ static SDL_Renderer *renderer;
 //static bool show_demo_window = true;
 
 
-static world_t world = {0};
+static boomed_t boomed = {0};
 
 static viewport_t viewport = {
-	.world = &world,
+	.world = &boomed.world,
 	.highlighted_vertex = ID_NONE,
 	.highlighted_edge = ID_NONE,
 	.zoom = 2.0f
@@ -51,7 +51,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 		return SDL_APP_FAILURE;
 	}
 	
-	world_init(&world);
+
+	boomed_init(&boomed);
 
 	viewport.size = get_window_size(window);
 	viewport_init(&viewport);

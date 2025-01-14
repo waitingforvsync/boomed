@@ -96,17 +96,11 @@ struct world_t {
     array_t(edge_t, edges);
     array_t(subzone_t, subzones);
     array_t(zone_t, zones);
-
-    arena_t vertex_arena;
-    arena_t edge_arena;
-    arena_t zone_arena;
-    arena_t id_arena;
-    arena_t temp_id_arena;
 };
 
 
-void world_init(world_t *world);
-void world_deinit(world_t *world);
+void world_init(world_t *world, arena_t *arena);
+void world_reset(world_t *world);
 
 
 element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena);

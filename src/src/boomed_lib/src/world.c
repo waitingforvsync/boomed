@@ -3,41 +3,31 @@
 #include "boomed/math/vec2f.h"
 
 
-void world_init(world_t *world) {
-    // Create separate arenas for the big arrays
-    // These will only hold the single array allocation and thus must be resizable
-    world->vertex_arena = make_arena();
-    world->edge_arena = make_arena();
-    world->zone_arena = make_arena();
-
-    // Create arenas for the multiple small arrays; these can be chained
-    world->id_arena = make_arena();
-    world->temp_id_arena = make_arena();
-
-    array_init_reserve(world->vertices, &world->vertex_arena, 4096);
-    array_init_reserve(world->edges, &world->edge_arena, 4096);
-    array_init_reserve(world->zones, &world->zone_arena, 4096);
+void world_init(world_t *world, arena_t *arena) {
+    array_init_reserve(world->vertices, arena, 8192);
+    array_init_reserve(world->edges, arena, 8192);
+    array_init_reserve(world->subzones, arena, 2048);
+    array_init_reserve(world->zones, arena, 2048);
 
     //--- test code
-    array_resize(world->vertices, &world->vertex_arena, 3);
+    array_resize(world->vertices, arena, 3);
     world->vertices[0] = (vertex_t) {.position = {0, 0}};
     world->vertices[1] = (vertex_t) {.position = {112, 32}};
     world->vertices[2] = (vertex_t) {.position = {0, 32}};
-    array_add(world->vertices, &world->vertex_arena, (vertex_t) {.position = {64, -32}});
+    array_add(world->vertices, arena, (vertex_t) {.position = {64, -32}});
 
-    array_resize(world->edges, &world->edge_arena, 2);
+    array_resize(world->edges, arena, 2);
     world->edges[0] = (edge_t) {.vertex_ids = {0, 1}};
     world->edges[1] = (edge_t) {.vertex_ids = {0, 2}};
     //--- end test code
 }
 
 
-void world_deinit(world_t *world) {    
-    arena_deinit(&world->temp_id_arena);
-    arena_deinit(&world->id_arena);
-    arena_deinit(&world->zone_arena);
-    arena_deinit(&world->edge_arena);
-    arena_deinit(&world->vertex_arena);
+void world_reset(world_t *world) {
+    array_reset(world->vertices);
+    array_reset(world->edges);
+    array_reset(world->subzones);
+    array_reset(world->zones);
 }
 
 

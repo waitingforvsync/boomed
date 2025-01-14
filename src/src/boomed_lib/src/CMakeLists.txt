@@ -2,6 +2,7 @@ target_sources("boomed_lib"
     PRIVATE
     "arena.c"
     "bitset.c"
+    "boomed.c"
     "ops.c"
     "world.c"
 )

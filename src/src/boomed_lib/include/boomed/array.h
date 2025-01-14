@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "boomed/arena.h"
 
 #define array_t(type, name) type *name; uint32_t name##_num, name##_capacity
 
