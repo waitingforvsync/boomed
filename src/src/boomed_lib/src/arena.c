@@ -178,6 +178,10 @@ void *arena_realloc(arena_t *arena, void *old_ptr, uint32_t old_size, uint32_t n
     assert(arena);
     assert(arena->base);
 
+    if (!old_ptr) {
+        return arena_alloc(arena, new_size);
+    }
+
     uint32_t old_aligned_size = arena_get_aligned_size(old_size);
     uint32_t new_aligned_size = arena_get_aligned_size(new_size);
 

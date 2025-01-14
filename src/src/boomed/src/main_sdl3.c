@@ -19,9 +19,10 @@ static SDL_Renderer *renderer;
 static boomed_t boomed = {0};
 
 static viewport_t viewport = {
-	.world = &boomed.world,
+	.boomed = &boomed,
 	.highlighted_vertex = ID_NONE,
 	.highlighted_edge = ID_NONE,
+	.snap = 16,
 	.zoom = 2.0f
 };
 

@@ -5,11 +5,11 @@
 
 
 typedef struct viewport_t viewport_t;
-typedef struct world_t world_t;
+typedef struct boomed_t boomed_t;
 typedef uint16_t element_id_t;
 
 struct viewport_t {
-    world_t *world;
+    boomed_t *boomed;
     mat23f_t world_to_viewport;
     mat23f_t viewport_to_world;
     vec2f_t size;
@@ -19,6 +19,7 @@ struct viewport_t {
     vec2f_t action_initial_world_pos;
     element_id_t highlighted_vertex;
     element_id_t highlighted_edge;
+    uint32_t snap;
     float zoom;
     bool is_panning;
     bool is_dragging;

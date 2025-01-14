@@ -1,37 +1,59 @@
 #ifndef BOOMED_OPS_H_
 #define BOOMED_OPS_H_
 
-#include "boomed/world.h"
+#include <stdint.h>
+#include "boomed/math/vec2i.h"
 
 typedef struct boomed_t boomed_t;
+typedef uint16_t element_id_t;
+
 
 typedef struct op_t op_t;
-typedef struct op_sentinel_t op_sentinel_t;
-typedef struct op_add_vertex_t op_add_vertex_t;
-typedef struct op_add_edge_t op_add_edge_t;
+typedef struct op_vertex_add_t op_vertex_add_t;
+typedef struct op_vertex_connect_edge_t op_vertex_connect_edge_t;
+typedef struct op_vertex_move_t op_vertex_move_t;
+typedef struct op_edge_add_t op_edge_add_t;
 
 enum op_type {
     op_type_sentinel,
-    op_type_add_vertex,
-    op_type_add_edge
+    op_type_vertex_add,
+    op_type_vertex_connect_edge,
+    op_type_vertex_move,
+    op_type_edge_add
 };
 
 
-struct op_add_vertex_t {
+struct op_vertex_add_t {
     vec2i_t position;
 };
 
 
-struct op_add_edge_t {
+struct op_vertex_connect_edge_t {
+    element_id_t vertex_id;
+    element_id_t edge_id;
+};
+
+
+struct op_vertex_move_t {
+    element_id_t vertex_id;
+    vec2i_t new_position;
+    vec2i_t old_position;
+};
+
+
+struct op_edge_add_t {
     element_id_t vertices[2];
+    uint8_t upper_colour;
+    uint8_t lower_colour;
 };
 
 
 struct op_t {
     uint32_t type;
     union {
-        op_add_vertex_t add_vertex;
-        op_add_edge_t add_edge;
+        op_vertex_add_t vertex_add;
+        op_vertex_move_t vertex_move;
+        op_edge_add_t edge_add;
     };
 };
 

@@ -2,7 +2,7 @@
 #include "main_sdl3.h"
 #include "boomed/math/aabb2f.h"
 #include "boomed/math/mat23f.h"
-#include "boomed/world.h"
+#include "boomed/boomed.h"
 
 
 static void viewport_calc_transforms(viewport_t *viewport) {
@@ -70,7 +70,7 @@ void viewport_action_stop(viewport_t *viewport, vec2f_t viewport_pos) {
 
 void viewport_update_mouse_pos(viewport_t *viewport, vec2f_t viewport_pos) {
     vec2f_t world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, viewport_pos);
-    const world_t *world = viewport->world;
+    const world_t *world = &viewport->boomed->world;
 
     viewport->highlighted_edge = ID_NONE;
     viewport->highlighted_vertex = vertex_find_closest_to_point(
@@ -180,7 +180,7 @@ static void viewport_draw_grid(const viewport_t *viewport) {
 
 
 static void viewport_draw_zones(const viewport_t *viewport) {
-    const world_t *world = viewport->world;
+    const world_t *world = &viewport->boomed->world;
     const vertex_t *vertices = world->vertices;
     const zone_t *zones = world->zones;
 
@@ -194,7 +194,7 @@ static void viewport_draw_zones(const viewport_t *viewport) {
 }
 
 static void viewport_draw_edges(const viewport_t *viewport) {
-    const world_t *world = viewport->world;
+    const world_t *world = &viewport->boomed->world;
     const vertex_t *vertices = world->vertices;
     const edge_t *edges = world->edges;
 
@@ -217,7 +217,7 @@ static void viewport_draw_edges(const viewport_t *viewport) {
 }
 
 static void viewport_draw_vertices(const viewport_t *viewport) {
-    const world_t *world = viewport->world;
+    const world_t *world = &viewport->boomed->world;
     const vertex_t *vertices = world->vertices;
 
     aabb2f_t viewport_aabb = aabb2f_make_with_margin(
