@@ -43,30 +43,6 @@ void bitset_resize(bitset_t *bitset, uint32_t size, arena_t *arena) {
 }
 
 
-void bitset_reset(bitset_t *bitset) {
-    bitset->num = 0;
-}
-
-
-void bitset_set(bitset_t *bitset, uint32_t index) {
-    if (index < bitset->num) {
-        bitset->bits[index / 64] |= (1ULL << (index & 63));
-    }
-}
-
-
-void bitset_clear(bitset_t *bitset, uint32_t index) {
-    if (index < bitset->num) {
-        bitset->bits[index / 64] &= ~(1ULL << (index & 63));
-    }
-}
-
-
-bool bitset_is_set(const bitset_t *bitset, uint32_t index) {
-    return index < bitset->num && (bitset->bits[index / 64] & (1ULL << (index & 63)));
-}
-
-
 void bitset_for_each(const bitset_t *bitset, void (*fn)(void *, uint32_t), void *ctx) {
     for (uint32_t i = 0, max_i = (bitset->num + 63) / 64; i < max_i; ++i) {
         uint64_t b = bitset->bits[i];
