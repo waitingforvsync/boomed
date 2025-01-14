@@ -140,11 +140,8 @@ static void viewport_draw_grid(const viewport_t *viewport) {
         int32_t grid_spacing = 1 << log2_grid_spacing;
 
         float norm = log2_grid_spacing / (float)log2_max_grid_spacing;
-        float f = 1.0f - 0.375f * norm * norm;
-        uint32_t colour = ((uint32_t)(0x72 * f) << 0) |
-                          ((uint32_t)(0x8C * f) << 8) |
-                          ((uint32_t)(0x99 * f) << 16) |
-                          (0xFF << 24);
+        float f = norm * norm * 0.25f;
+        uint32_t colour = ((uint32_t)(0xFF * f)) << 24;
 
         // Plot vertical lines from left to right of the viewport
         // Note this corresponds to advancing in y world space

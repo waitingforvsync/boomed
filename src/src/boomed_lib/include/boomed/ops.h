@@ -17,7 +17,6 @@ typedef struct op_edge_add_t op_edge_add_t;
 enum op_type {
     op_type_sentinel,
     op_type_vertex_add,
-    op_type_vertex_connect_edge,
     op_type_vertex_move,
     op_type_edge_add
 };
@@ -25,12 +24,6 @@ enum op_type {
 
 struct op_vertex_add_t {
     vec2i_t position;
-};
-
-
-struct op_vertex_connect_edge_t {
-    element_id_t vertex_id;
-    element_id_t edge_id;
 };
 
 

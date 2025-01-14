@@ -55,6 +55,19 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
 	boomed_init(&boomed);
 
+	//--- test code
+    element_id_t v0 = world_add_vertex(&boomed.world, (vec2i_t) {0, 0}, &boomed.world_arena);
+    element_id_t v1 = world_add_vertex(&boomed.world, (vec2i_t) {112, 48}, &boomed.world_arena);
+    element_id_t v2 = world_add_vertex(&boomed.world, (vec2i_t) {0, 32}, &boomed.world_arena);
+    element_id_t v3 = world_add_vertex(&boomed.world, (vec2i_t) {64, -32}, &boomed.world_arena);
+
+    element_id_t e0 = world_add_edge(&boomed.world, v0, v2, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    element_id_t e1 = world_add_edge(&boomed.world, v0, v3, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    element_id_t e2 = world_add_edge(&boomed.world, v1, v2, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    element_id_t e3 = world_add_edge(&boomed.world, v3, v1, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    //--- end test code
+
+
 	viewport.size = get_window_size(window);
 	viewport_init(&viewport);
 
@@ -216,7 +229,11 @@ static SDL_FColor fcolor_make_from_packed_rgba(uint32_t color) {
 
 
 void draw_thick_line(vec2f_t start, vec2f_t end, float width, uint32_t color) {
-	
+	bool has_alpha = ((color >> 24) < 0xFF);
+	if (has_alpha) {
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	}
+
 	vec2f_t dir = vec2f_normalize(vec2f_sub(end, start));
 	vec2f_t offset = vec2f_scalar_mul(vec2f_perp(dir), width * 0.5f);
 	
@@ -242,6 +259,10 @@ void draw_thick_line(vec2f_t start, vec2f_t end, float width, uint32_t color) {
 		sizeof vertex_pos / (sizeof *vertex_pos),
 		indices, sizeof indices / sizeof *indices, sizeof *indices
 	);
+
+	if (has_alpha) {
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+	}
 }
 
 

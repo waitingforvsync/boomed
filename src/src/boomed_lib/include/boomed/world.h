@@ -108,7 +108,7 @@ bool world_reindex_vertex(world_t *world, element_id_t old_id, element_id_t new_
 void world_move_vertex(world_t *world, element_id_t vertex_id);
 bool world_remove_last_vertex(world_t *world);
 
-element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t *id_arena);
+element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t scratch);
 bool world_reindex_edge(world_t *world, element_id_t old_id, element_id_t new_id);
 bool world_remove_last_edge(world_t *world);
 
