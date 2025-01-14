@@ -10,6 +10,7 @@ typedef struct aabb2f_t aabb2f_t;
 typedef struct vertex_t vertex_t;
 typedef struct edge_t edge_t;
 typedef struct contour_t contour_t;
+typedef struct subzone_t subzone_t;
 typedef struct zone_t zone_t;
 typedef struct world_t world_t;
 typedef uint16_t element_id_t;
@@ -63,13 +64,22 @@ struct contour_t {
 };
 
 
+// A subzone is a convex shaped part of a zone.
+struct subzone_t {
+    contour_t perimeter;
+    element_id_t zone_id;
+};
+
+
 // A zone is the irregular polygon formed by a closed contour of edges.
 // It may optionally have any number of holes.
 // It has a floor and ceiling height and corresponding colour.
+// A zone is decomposed into a list of convex subzones.
 // Zones maintain a hierarchy of which other zones exist within them and which zone they themselves are within.
 struct zone_t {
     contour_t perimeter;
     array_t(contour_t, holes);
+    array_t(element_id_t, subzone_ids);
     array_t(element_id_t, inner_zone_ids);
     element_id_t outer_zone_id;
     uint8_t floor_height;
@@ -84,6 +94,7 @@ struct zone_t {
 struct world_t {
     array_t(vertex_t, vertices);
     array_t(edge_t, edges);
+    array_t(subzone_t, subzones);
     array_t(zone_t, zones);
 
     arena_t vertex_arena;
