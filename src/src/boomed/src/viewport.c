@@ -134,7 +134,7 @@ static void viewport_draw_grid(const viewport_t *viewport) {
     vec2f_t grid_world_origin = vec2f_component_ceil(top_left_world_pos);
     vec2f_t grid_viewport_origin = mat23f_vec2f_mul(viewport->world_to_viewport, grid_world_origin);
 
-    static const uint32_t log2_max_grid_spacing = 8;
+    static const uint32_t log2_max_grid_spacing = 10;
 
     for (uint32_t log2_grid_spacing = 3; log2_grid_spacing <= log2_max_grid_spacing; log2_grid_spacing++) {
         int32_t grid_spacing = 1 << log2_grid_spacing;
