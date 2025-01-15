@@ -3,6 +3,10 @@
 #include "boomed/math/aabb2f.h"
 #include "boomed/math/mat23f.h"
 #include "boomed/boomed.h"
+#include "boomed/world/vertex.h"
+#include "boomed/world/edge.h"
+#include "boomed/world/subzone.h"
+#include "boomed/world/zone.h"
 
 
 static void viewport_calc_transforms(viewport_t *viewport) {
@@ -73,18 +77,15 @@ void viewport_update_mouse_pos(viewport_t *viewport, vec2f_t viewport_pos) {
     const world_t *world = &viewport->boomed->world;
 
     viewport->highlighted_edge = ID_NONE;
-    viewport->highlighted_vertex = vertex_find_closest_to_point(
-        world->vertices,
-        world->vertices_num,
+    viewport->highlighted_vertex = world_find_vertex_closest_to_point(
+        world,
         world_pos,
         10.0f / viewport->zoom
     );
 
     if (viewport->highlighted_vertex == ID_NONE) {
-        viewport->highlighted_edge = edge_find_closest_to_point(
-            world->edges,
-            world->edges_num,
-            world->vertices,
+        viewport->highlighted_edge = world_find_edge_closest_to_point(
+            world,
             world_pos,
             6.0f / viewport->zoom
         );

@@ -7,7 +7,7 @@
 #include "main_sdl3.h"
 #include "viewport.h"
 #include "boomed/boomed.h"
-#include "boomed/world.h"
+#include "boomed/world/world.h"
 #include "boomed/math/math.h"
 #include "boomed/math/vec2f.h"
 

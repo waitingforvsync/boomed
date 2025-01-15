@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "boomed/ops.h"
 #include "boomed/boomed.h"
-#include "boomed/world.h"
+#include "boomed/world/world.h"
 
 
 static void op_null(op_t *op, boomed_t *boomed) {
