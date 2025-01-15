@@ -41,6 +41,13 @@ bool world_reindex_vertex(world_t *world, element_id_t old_id, element_id_t new_
 void world_move_vertex(world_t *world, element_id_t vertex_id);
 bool world_remove_last_vertex(world_t *world);
 
+typedef struct add_edge_result_t add_edge_result_t;
+struct add_edge_result_t {
+    element_id_t new_edge_id;
+    element_id_t new_zone_id;
+    element_id_t split_zone_id;
+};
+
 element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *edge_arena, arena_t scratch);
 bool world_reindex_edge(world_t *world, element_id_t old_id, element_id_t new_id);
 bool world_remove_last_edge(world_t *world);

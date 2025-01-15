@@ -7,6 +7,8 @@
 
 
 void world_init(world_t *world, arena_t *arena) {
+    assert(world);
+    assert(arena);
     array_init_reserve(world->vertices, arena, 8192);
     array_init_reserve(world->edges, arena, 8192);
     array_init_reserve(world->zones, arena, 1024);
@@ -14,6 +16,7 @@ void world_init(world_t *world, arena_t *arena) {
 
 
 void world_reset(world_t *world) {
+    assert(world);
     array_reset(world->vertices);
     array_reset(world->edges);
     array_reset(world->zones);
@@ -21,6 +24,7 @@ void world_reset(world_t *world) {
 
 
 element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *arena) {
+    assert(world);
     element_id_t vertex_id = (element_id_t)array_add(
         world->vertices,
         arena,
@@ -32,7 +36,16 @@ element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *arena) 
 }
 
 
-static void world_replace_ids(element_id_t ids[], uint32_t ids_num, element_id_t from, element_id_t to) {
+bool world_remove_last_vertex(world_t *world) {
+    assert(world);
+    assert(array_is_empty(array_get_last(world->vertices).edge_ids));
+    array_pop(world->vertices);
+    return true;
+}
+
+
+static void world_replace_ids(element_id_t *ids, uint32_t ids_num, element_id_t from, element_id_t to) {
+    assert(ids);
     for (uint32_t i = 0; i < ids_num; ++i) {
         if (ids[i] == from) {
             ids[i] = to;
@@ -41,6 +54,7 @@ static void world_replace_ids(element_id_t ids[], uint32_t ids_num, element_id_t
 }
 
 bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t new_index) {
+    assert(world);
     if (!array_is_empty(world->vertices[new_index].edge_ids)) {
         // It's an error if we use a vertex which still has edges connected to it
         return false;
@@ -75,6 +89,7 @@ bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t n
 
 
 static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, element_id_t edge_id, arena_t *arena) {
+    assert(world);
     vertex_t *vertices = world->vertices; 
     const edge_t *edges = world->edges;
 
@@ -84,6 +99,9 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
     if (!array_is_valid(vertex->edge_ids)) {
         array_reserve(vertex->edge_ids, arena, 16);
     }
+
+    // This edge must not already be in the connected edges list
+    assert(vertex_get_connected_edge_index(vertex, edge_id) == INDEX_NONE);
 
     element_id_t v0 = edge_get_other_vertex(&edges[edge_id], vertex_id);
     assert(v0 != ID_NONE);
@@ -108,6 +126,11 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
 
 
 element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *arena, arena_t scratch) {
+    assert(world);
+    assert(v0 != ID_NONE);
+    assert(v1 != ID_NONE);
+    assert(v0 != v1);
+
     element_id_t edge_id = (element_id_t)array_add(
         world->edges,
         arena,
@@ -147,10 +170,13 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
 
 
 static void world_find_zone_holes(world_t *world, element_id_t zone_id) {
+    assert(world);
 }
 
 
 element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *arena, arena_t scratch) {
+    assert(world);
+    assert(contour);
     element_id_t zone_id = (element_id_t)array_add(
         world->zones,
         arena,
@@ -184,6 +210,7 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *a
 
 
 element_id_t world_find_vertex_closest_to_point(const world_t *world, vec2f_t point, float within) {
+    assert(world);
     const vertex_t *vertices = world->vertices;
     float tolerance_sqr = within * within;
     element_id_t result = ID_NONE;
@@ -223,6 +250,7 @@ static float edge_point_distancesqr(vec2f_t start, vec2f_t end, vec2f_t point) {
 
 
 element_id_t world_find_edge_closest_to_point(const world_t *world, vec2f_t point, float within) {
+    assert(world);
     const vertex_t *vertices = world->vertices;
     const edge_t *edges = world->edges;
     float tolerance_sqr = within * within;

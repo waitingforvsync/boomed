@@ -64,7 +64,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     element_id_t e0 = world_add_edge(&boomed.world, v0, v2, 0, 0, &boomed.world_arena, boomed.scratch_arena);
     element_id_t e1 = world_add_edge(&boomed.world, v0, v3, 0, 0, &boomed.world_arena, boomed.scratch_arena);
     element_id_t e2 = world_add_edge(&boomed.world, v1, v2, 0, 0, &boomed.world_arena, boomed.scratch_arena);
-    element_id_t e3 = world_add_edge(&boomed.world, v3, v1, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    element_id_t e3 = world_add_edge(&boomed.world, v0, v1, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    element_id_t e4 = world_add_edge(&boomed.world, v3, v1, 0, 0, &boomed.world_arena, boomed.scratch_arena);
     //--- end test code
 
 
