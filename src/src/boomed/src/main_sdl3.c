@@ -141,6 +141,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 		
 		case SDL_EVENT_MOUSE_WHEEL:
 			viewport_set_zoom(&viewport, (vec2f_t){event->wheel.mouse_x, event->wheel.mouse_y}, event->wheel.y);
+			viewport_update_mouse_pos(&viewport, (vec2f_t){event->wheel.mouse_x, event->wheel.mouse_y});
 			break;
 
 		case SDL_EVENT_KEY_DOWN:
@@ -228,6 +229,51 @@ static SDL_FColor fcolor_make_from_packed_rgba(uint32_t color) {
 }
 
 
+#define MAX_TRIANGLE_FAN_TRIANGLES 200
+
+static const uint8_t *get_triangle_fan_indices(void) {
+	static uint8_t indices[MAX_TRIANGLE_FAN_TRIANGLES * 3] = {0};
+	static bool initialized = false;
+
+	if (!initialized) {
+		for (uint32_t i = 0, n = 0; i < MAX_TRIANGLE_FAN_TRIANGLES; ++i, n += 3) {
+			indices[n + 0] = 0;
+			indices[n + 1] = i + 1;
+			indices[n + 2] = i + 2;			
+		}
+		initialized = true;
+	}
+
+	return indices;
+}
+
+
+void draw_polygon(const vec2f_t *points, uint32_t num_points, uint32_t color) {
+	assert(num_points < MAX_TRIANGLE_FAN_TRIANGLES * 3);
+
+	bool has_alpha = ((color >> 24) < 0xFF);
+	if (has_alpha) {
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	}
+
+	SDL_FColor vertex_color = fcolor_make_from_packed_rgba(color);
+
+	SDL_RenderGeometryRaw(
+		renderer,
+		NULL,
+		vec2f_as_floats(points), sizeof *points,
+		&vertex_color, 0,
+		NULL, 0,
+		num_points,
+		get_triangle_fan_indices(), (num_points - 2) * 3, 1
+	);
+
+	if (has_alpha) {
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+	}
+}
+
+
 void draw_thick_line(vec2f_t start, vec2f_t end, float width, uint32_t color) {
 	bool has_alpha = ((color >> 24) < 0xFF);
 	if (has_alpha) {
@@ -275,10 +321,6 @@ void draw_point(vec2f_t centre, float radius, uint32_t color) {
 		vertex_pos[i] = vec2f_add(centre, vec2f_scalar_mul(vec2f_make_cossin(angle), radius));
 	}
 	
-	static uint8_t indices[(NUM_POINT_VERTICES - 2) * 3] = {
-		0, 1, 2,  0, 2, 3,  0, 3, 4,  0, 4, 5,  0, 5, 6,  0, 6, 7,  0, 7, 8,  0, 8, 9
-	};
-	
 	SDL_FColor vertex_color = fcolor_make_from_packed_rgba(color);
 
 	SDL_RenderGeometryRaw(
@@ -288,6 +330,6 @@ void draw_point(vec2f_t centre, float radius, uint32_t color) {
 		&vertex_color, 0,
 		NULL, 0,
 		sizeof vertex_pos / (sizeof *vertex_pos),
-		indices, sizeof indices / sizeof *indices, sizeof *indices
+		get_triangle_fan_indices(), (NUM_POINT_VERTICES - 2) * 3, 1
 	);
 }

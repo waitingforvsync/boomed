@@ -1,11 +1,9 @@
 #ifndef BOOMED_WORLD_H_
 #define BOOMED_WORLD_H_
 
-#include "boomed/math/vec2f.h"
+#include "boomed/math/aabb2f.h"
 #include "boomed/array.h"
 #include "boomed/arena.h"
-
-typedef struct aabb2f_t aabb2f_t;
 
 typedef struct vertex_t vertex_t;
 typedef struct edge_t edge_t;
@@ -64,10 +62,9 @@ struct contour_t {
 };
 
 
-// A subzone is a convex shaped part of a zone.
+// A subzone is just an array of vertex IDs defined in a clockwise order.
 struct subzone_t {
-    contour_t perimeter;
-    element_id_t zone_id;
+    array_t(element_id_t, vertex_ids);
 };
 
 
@@ -79,8 +76,9 @@ struct subzone_t {
 struct zone_t {
     contour_t perimeter;
     array_t(contour_t, holes);
-    array_t(element_id_t, subzone_ids);
+    array_t(subzone_t, subzones);
     array_t(element_id_t, inner_zone_ids);
+    aabb2f_t aabb;
     element_id_t outer_zone_id;
     uint8_t floor_height;
     uint8_t ceiling_height;
@@ -94,7 +92,6 @@ struct zone_t {
 struct world_t {
     array_t(vertex_t, vertices);
     array_t(edge_t, edges);
-    array_t(subzone_t, subzones);
     array_t(zone_t, zones);
 };
 

@@ -176,9 +176,24 @@ static void viewport_draw_grid(const viewport_t *viewport) {
 #define VIEWPORT_EDGE_THICKNESS 3
 
 
-static void viewport_draw_zones(const viewport_t *viewport) {
+static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *subzone, arena_t scratch) {
     const world_t *world = &viewport->boomed->world;
     const vertex_t *vertices = world->vertices;
+
+    uint32_t num_vertices = subzone->vertex_ids_num;
+    vec2f_t *points = arena_new_n(vec2f_t, num_vertices, &scratch);
+
+    for (uint32_t n = 0; n < num_vertices; ++n) {
+        points[n] = mat23f_vec2f_mul(
+            viewport->world_to_viewport,
+            vec2f_make_from_vec2i(vertices[subzone->vertex_ids[n]].position)
+        );
+    }
+    draw_polygon(points, num_vertices, 0xFF808090);
+}
+
+static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
+    const world_t *world = &viewport->boomed->world;
     const zone_t *zones = world->zones;
 
     aabb2f_t viewport_aabb = aabb2f_make(
@@ -187,6 +202,12 @@ static void viewport_draw_zones(const viewport_t *viewport) {
     );
 
     for (uint32_t i = 0; i < world->zones_num; ++i) {
+        const zone_t *zone = &world->zones[i];
+        if (aabb2f_intersects(viewport_aabb, zone->aabb)) {
+            for (uint32_t j = 0; j < zone->subzones_num; ++j) {
+                viewport_draw_subzone(viewport, &zone->subzones[j], scratch);
+            }
+        }
     }
 }
 
@@ -237,7 +258,7 @@ static void viewport_draw_vertices(const viewport_t *viewport) {
 }
 
 void viewport_render(const viewport_t *viewport) {
-    viewport_draw_zones(viewport);
+    viewport_draw_zones(viewport, viewport->boomed->scratch_arena);
     viewport_draw_grid(viewport);
     viewport_draw_edges(viewport);
     viewport_draw_vertices(viewport);
