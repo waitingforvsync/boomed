@@ -6,12 +6,12 @@
 #include "boomed/arena.h"
 
 
-void world_init(world_t *world, arena_t *arena) {
+void world_init(world_t *world) {
     assert(world);
-    assert(arena);
-    array_init_reserve(world->vertices, arena, 8192);
-    array_init_reserve(world->edges, arena, 8192);
-    array_init_reserve(world->zones, arena, 1024);
+    world->arena = make_arena();
+    array_init_reserve(world->vertices, &world->arena, 8192);
+    array_init_reserve(world->edges, &world->arena, 8192);
+    array_init_reserve(world->zones, &world->arena, 1024);
 }
 
 
@@ -20,17 +20,16 @@ void world_reset(world_t *world) {
     array_reset(world->vertices);
     array_reset(world->edges);
     array_reset(world->zones);
+    arena_reset(&world->arena);
 }
 
 
-element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *arena) {
+element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *ids_arena) {
     assert(world);
     element_id_t vertex_id = (element_id_t)array_add(
         world->vertices,
-        arena,
-        (vertex_t){
-            .position = position
-        }
+        &world->arena,
+        vertex_make(position, ids_arena)
     );
     return vertex_id;
 }
@@ -88,17 +87,14 @@ bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t n
 }
 
 
-static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, element_id_t edge_id, arena_t *arena) {
+static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, element_id_t edge_id, arena_t *ids_arena) {
     assert(world);
     vertex_t *vertices = world->vertices; 
     const edge_t *edges = world->edges;
 
     // Maintain a list of all the edges which connect to this vertex
-    // Only create the array the first time we need it
     vertex_t *vertex = &vertices[vertex_id];
-    if (!array_is_valid(vertex->edge_ids)) {
-        array_reserve(vertex->edge_ids, arena, 16);
-    }
+    assert(array_is_valid(vertex->edge_ids));
 
     // This edge must not already be in the connected edges list
     assert(vertex_get_connected_edge_index(vertex, edge_id) == INDEX_NONE);
@@ -121,11 +117,11 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
         }
     }
 
-    array_insert(vertex->edge_ids, arena, insert_index, edge_id);
+    array_insert(vertex->edge_ids, ids_arena, insert_index, edge_id);
 }
 
 
-element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *arena, arena_t scratch) {
+element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, uint8_t upper_colour, uint8_t lower_colour, arena_t *ids_arena, arena_t scratch) {
     assert(world);
     assert(v0 != ID_NONE);
     assert(v1 != ID_NONE);
@@ -133,7 +129,7 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
 
     element_id_t edge_id = (element_id_t)array_add(
         world->edges,
-        arena,
+        &world->arena,
         (edge_t) {
             .vertex_ids = {v0, v1},
             .zone_ids = {ID_NONE, ID_NONE},
@@ -142,8 +138,8 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
         }
     );
 
-    world_add_vertex_edge(world, v0, edge_id, arena);
-    world_add_vertex_edge(world, v1, edge_id, arena);
+    world_add_vertex_edge(world, v0, edge_id, ids_arena);
+    world_add_vertex_edge(world, v1, edge_id, ids_arena);
 
     if (world->vertices[v0].edge_ids_num > 1 && world->vertices[v1].edge_ids_num > 1) {
         contour_t c0 = contour_make(world->vertices, world->edges, edge_id, v0, &scratch);
@@ -157,11 +153,11 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
         }
         else if (c0_is_perimeter) {
             // create a new zone from contour 0
-            world_add_zone(world, &c0, arena, scratch);
+            world_add_zone(world, &c0, ids_arena, scratch);
         }
         else if (c1_is_perimeter) {
             // create a new zone from contour 1
-            world_add_zone(world, &c1, arena, scratch);
+            world_add_zone(world, &c1, ids_arena, scratch);
         }
     }
 
@@ -174,13 +170,14 @@ static void world_find_zone_holes(world_t *world, element_id_t zone_id) {
 }
 
 
-element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *arena, arena_t scratch) {
+element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *ids_arena, arena_t scratch) {
     assert(world);
     assert(contour);
     element_id_t zone_id = (element_id_t)array_add(
         world->zones,
-        arena,
+        &world->arena,
         (zone_t) {
+            .perimeter = contour_make_copy(contour, ids_arena),
             .outer_zone_id = ID_NONE,
             .floor_height = 192,
             .ceiling_height = 128,
@@ -193,15 +190,14 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *a
     const vertex_t *vertices = world->vertices;
     const edge_t *edges = world->edges;
 
-    array_init_copy_reserve(zone->perimeter.edge_ids, arena, contour->edge_ids, 32);
-    array_init_reserve(zone->holes, arena, 8);
-    array_init_reserve(zone->subzones, arena, 32);
-    array_init_reserve(zone->inner_zone_ids, arena, 32);
+    array_init_reserve(zone->holes, ids_arena, 8);
+    array_init_reserve(zone->subzones, ids_arena, 32);
+    array_init_reserve(zone->inner_zone_ids, ids_arena, 32);
 
     zone->aabb = zone_get_aabb(zone, vertices, edges);
 
     world_find_zone_holes(world, zone_id);
-    zone_build_subzones(zone, vertices, edges, arena, scratch);
+    zone_build_subzones(zone, vertices, edges, ids_arena, scratch);
 
     // @todo: find zone hierarchy
 

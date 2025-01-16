@@ -35,6 +35,14 @@ contour_t contour_make(const vertex_t *vertices, const edge_t *edges, element_id
 }
 
 
+contour_t contour_make_copy(const contour_t *contour_to_copy, arena_t *arena) {
+    assert(contour_to_copy);
+    contour_t contour;
+    array_init_copy_reserve(contour.edge_ids, arena, contour_to_copy->edge_ids, 32);
+    return contour;
+}
+
+
 bool contour_is_valid(const contour_t *contour) {
     assert(contour);
     return !array_is_empty(contour->edge_ids);

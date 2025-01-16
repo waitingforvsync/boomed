@@ -12,7 +12,7 @@ static void op_null(op_t *op, boomed_t *boomed) {
 
 
 static void op_vertex_add_exec(op_t *op, boomed_t *boomed) {
-    world_add_vertex(&boomed->world, op->vertex_add.position, &boomed->world_arena);
+    world_add_vertex(&boomed->world, op->vertex_add.position, &boomed->ids_arena);
 }
 
 static void op_vertex_add_undo(op_t *op, boomed_t *boomed) {
@@ -38,7 +38,7 @@ static void op_edge_add_exec(op_t *op, boomed_t *boomed) {
         op->edge_add.vertices[1],
         op->edge_add.upper_colour,
         op->edge_add.lower_colour,
-        &boomed->world_arena,
+        &boomed->ids_arena,
         boomed->scratch_arena
     );
 }

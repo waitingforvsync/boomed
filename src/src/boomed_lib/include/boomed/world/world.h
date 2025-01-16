@@ -27,13 +27,14 @@ typedef struct vec2f_t vec2f_t;
 // while allowing us to render zones from left to right.
 
 struct world_t {
+    arena_t arena;
     array_t(vertex_t, vertices);
     array_t(edge_t, edges);
     array_t(zone_t, zones);
 };
 
 
-void world_init(world_t *world, arena_t *arena);
+void world_init(world_t *world);
 void world_reset(world_t *world);
 
 element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *vertex_arena);

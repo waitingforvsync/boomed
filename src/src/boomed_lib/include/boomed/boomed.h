@@ -8,8 +8,8 @@
 typedef struct boomed_t boomed_t;
 
 struct boomed_t {
-    arena_t world_arena;
-    arena_t preview_arena;
+    arena_t ids_arena;
+    arena_t preview_ids_arena;
     arena_t scratch_arena;
     arena_t ops_arena;
     world_t world;

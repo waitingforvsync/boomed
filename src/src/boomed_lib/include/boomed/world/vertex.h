@@ -16,6 +16,8 @@ struct vertex_t {
 };
 
 
+vertex_t vertex_make(vec2i_t position, arena_t *ids_arena);
+
 uint32_t vertex_get_connected_edge_index(const vertex_t *vertex, element_id_t edge_id);
 element_id_t vertex_get_prev_edge(const vertex_t *vertex, element_id_t edge_id);
 element_id_t vertex_get_next_edge(const vertex_t *vertex, element_id_t edge_id);

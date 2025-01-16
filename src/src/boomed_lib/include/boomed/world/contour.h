@@ -20,6 +20,7 @@ struct contour_t {
 
 
 contour_t contour_make(const vertex_t *vertices, const edge_t *edges, element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena);
+contour_t contour_make_copy(const contour_t *contour_to_copy, arena_t *arena);
 
 bool contour_is_valid(const contour_t *contour);
 element_id_t contour_get_start_vertex(const contour_t *contour, const edge_t *edges);

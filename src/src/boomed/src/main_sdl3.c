@@ -56,16 +56,16 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 	boomed_init(&boomed);
 
 	//--- test code
-    element_id_t v0 = world_add_vertex(&boomed.world, (vec2i_t) {0, 0}, &boomed.world_arena);
-    element_id_t v1 = world_add_vertex(&boomed.world, (vec2i_t) {112, 48}, &boomed.world_arena);
-    element_id_t v2 = world_add_vertex(&boomed.world, (vec2i_t) {0, 32}, &boomed.world_arena);
-    element_id_t v3 = world_add_vertex(&boomed.world, (vec2i_t) {64, -32}, &boomed.world_arena);
+    element_id_t v0 = world_add_vertex(&boomed.world, (vec2i_t) {0, 0}, &boomed.ids_arena);
+    element_id_t v1 = world_add_vertex(&boomed.world, (vec2i_t) {112, 48}, &boomed.ids_arena);
+    element_id_t v2 = world_add_vertex(&boomed.world, (vec2i_t) {0, 32}, &boomed.ids_arena);
+    element_id_t v3 = world_add_vertex(&boomed.world, (vec2i_t) {64, -32}, &boomed.ids_arena);
 
-    element_id_t e0 = world_add_edge(&boomed.world, v0, v2, 0, 0, &boomed.world_arena, boomed.scratch_arena);
-    element_id_t e1 = world_add_edge(&boomed.world, v0, v3, 0, 0, &boomed.world_arena, boomed.scratch_arena);
-    element_id_t e2 = world_add_edge(&boomed.world, v1, v2, 0, 0, &boomed.world_arena, boomed.scratch_arena);
-    element_id_t e3 = world_add_edge(&boomed.world, v0, v1, 0, 0, &boomed.world_arena, boomed.scratch_arena);
-    element_id_t e4 = world_add_edge(&boomed.world, v3, v1, 0, 0, &boomed.world_arena, boomed.scratch_arena);
+    element_id_t e0 = world_add_edge(&boomed.world, v0, v2, 0, 0, &boomed.ids_arena, boomed.scratch_arena);
+    element_id_t e1 = world_add_edge(&boomed.world, v0, v3, 0, 0, &boomed.ids_arena, boomed.scratch_arena);
+    element_id_t e2 = world_add_edge(&boomed.world, v1, v2, 0, 0, &boomed.ids_arena, boomed.scratch_arena);
+    element_id_t e3 = world_add_edge(&boomed.world, v0, v1, 0, 0, &boomed.ids_arena, boomed.scratch_arena);
+    element_id_t e4 = world_add_edge(&boomed.world, v3, v1, 0, 0, &boomed.ids_arena, boomed.scratch_arena);
     //--- end test code
 
 
