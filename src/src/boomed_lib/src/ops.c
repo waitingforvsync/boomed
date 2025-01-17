@@ -43,7 +43,7 @@ static void op_edge_add_undo(op_t *op, boomed_t *boomed) {
 
 
 struct {
-    void (*do_fn)(op_t *, boomed_t *);
+    void (*exec_fn)(op_t *, boomed_t *);
     void (*undo_fn)(op_t *, boomed_t *);
 }
 op_fns[] = {
@@ -57,8 +57,8 @@ uint32_t do_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t 
     assert(ops[index].type == op_type_sentinel);
     if (index != ops_num - 1) {
         for (++index; ops[index].type != op_type_sentinel; ++index) {
-            if (op_fns[ops[index].type].do_fn) {
-                op_fns[ops[index].type].do_fn(ops + index, boomed);
+            if (op_fns[ops[index].type].exec_fn) {
+                op_fns[ops[index].type].exec_fn(ops + index, boomed);
             }
         }
     }
