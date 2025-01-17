@@ -24,6 +24,8 @@ struct edge_t {
 };
 
 
+void edge_set_zone_by_vertex(edge_t *edge, element_id_t vertex_id, element_id_t zone_id);
+element_id_t edge_get_zone_by_vertex(const edge_t *edge, element_id_t vertex_id);
 element_id_t edge_get_other_vertex(const edge_t *edge, element_id_t vertex_id);
 aabb2f_t edge_get_aabb(const edge_t *edge, const vertex_t *vertices);
 

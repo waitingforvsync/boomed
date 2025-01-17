@@ -19,7 +19,7 @@ struct viewport_t {
     vec2f_t action_initial_world_pos;
     element_id_t highlighted_vertex;
     element_id_t highlighted_edge;
-    uint32_t snap;
+    int32_t snap;
     float zoom;
     bool is_panning;
     bool is_dragging;

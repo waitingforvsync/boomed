@@ -12,10 +12,17 @@
 static void viewport_calc_transforms(viewport_t *viewport) {
     viewport->world_to_viewport = mat23f_mul(
         mat23f_mat22f_mul(
-            mat23f_make_transform(vec2f_scalar_mul(viewport->size, 0.5f)),
-            (mat22f_t){{0.0f, -viewport->zoom}, {viewport->zoom, 0.0f}}
+            mat23f_make_transform(
+                vec2f_scalar_mul(viewport->size, 0.5f)
+            ),
+            (mat22f_t) {
+                vec2f_scalar_mul(vec2f_make_unity(), -viewport->zoom),
+                vec2f_scalar_mul(vec2f_make_unitx(), viewport->zoom)
+            }
         ),
-        mat23f_make_transform(vec2f_negate(viewport->focus_world_pos))
+        mat23f_make_transform(
+            vec2f_negate(viewport->focus_world_pos)
+        )
     );
 
     viewport->viewport_to_world = mat23f_inverse(viewport->world_to_viewport);
@@ -45,7 +52,10 @@ void viewport_pan_move(viewport_t *viewport, vec2f_t viewport_pos) {
     vec2f_t delta = vec2f_sub(viewport_pos, viewport->pan_initial_viewport_pos);
     viewport->focus_world_pos = vec2f_sub(
         viewport->pan_initial_world_pos,
-        mat22f_vec2f_mul(viewport->viewport_to_world.m, delta)
+        mat22f_vec2f_mul(
+            viewport->viewport_to_world.m,
+            delta
+        )
     );
     viewport_calc_transforms(viewport);
 }
@@ -53,6 +63,65 @@ void viewport_pan_move(viewport_t *viewport, vec2f_t viewport_pos) {
 
 void viewport_pan_stop(viewport_t *viewport, vec2f_t viewport_pos) {
     viewport->is_panning = false;
+}
+
+
+typedef struct nearest_elements_t {
+    element_id_t vertex_id;
+    element_id_t edge_id;
+} nearest_elements_t;
+
+#define VERTEX_VIEWPORT_PIXEL_TOLERANCE (10.0f)
+#define EDGE_VIEWPORT_PIXEL_TOLERANCE (6.0f)
+
+static nearest_elements_t viewport_get_nearest_elements(const viewport_t *viewport, vec2f_t world_pos) {
+    // Choose either the nearest vertex or the nearest edge, never both.
+    // Vertices have a higher tolerance, as it's generally more useful to want to snap to a vertex than an edge.
+    const world_t *world = &viewport->boomed->world;
+    element_id_t vertex_id = world_find_vertex_closest_to_point(
+        world,
+        world_pos,
+        VERTEX_VIEWPORT_PIXEL_TOLERANCE / viewport->zoom
+    );
+
+    element_id_t edge_id = ID_NONE;
+    if (vertex_id == ID_NONE) {
+        edge_id = world_find_edge_closest_to_point(
+            world,
+            world_pos,
+            EDGE_VIEWPORT_PIXEL_TOLERANCE / viewport->zoom
+        );
+    }
+
+    return (nearest_elements_t) {
+        vertex_id,
+        edge_id
+    };
+}
+
+
+static vec2i_t vec2i_make_snapped(vec2f_t world_pos, int32_t snap) {
+    return (vec2i_t) {
+        lroundf(world_pos.x / snap) * snap,
+        lroundf(world_pos.y / snap) * snap
+    };
+}
+
+
+typedef struct point_info_t {
+    vec2i_t world_pos;
+    nearest_elements_t nearest;
+} point_info_t;
+
+static point_info_t viewport_get_point_info(const viewport_t *viewport, vec2f_t world_pos) {
+    // 
+    nearest_elements_t nearest = viewport_get_nearest_elements(viewport, world_pos);
+    vec2i_t snapped_point = vec2i_make_snapped(world_pos, viewport->snap);
+
+    return (point_info_t) {
+        snapped_point,
+        nearest
+    };
 }
 
 
@@ -74,22 +143,9 @@ void viewport_action_stop(viewport_t *viewport, vec2f_t viewport_pos) {
 
 void viewport_update_mouse_pos(viewport_t *viewport, vec2f_t viewport_pos) {
     vec2f_t world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, viewport_pos);
-    const world_t *world = &viewport->boomed->world;
-
-    viewport->highlighted_edge = ID_NONE;
-    viewport->highlighted_vertex = world_find_vertex_closest_to_point(
-        world,
-        world_pos,
-        10.0f / viewport->zoom
-    );
-
-    if (viewport->highlighted_vertex == ID_NONE) {
-        viewport->highlighted_edge = world_find_edge_closest_to_point(
-            world,
-            world_pos,
-            6.0f / viewport->zoom
-        );
-    }
+    nearest_elements_t nearest = viewport_get_nearest_elements(viewport, world_pos);
+    viewport->highlighted_vertex = nearest.vertex_id;
+    viewport->highlighted_edge = nearest.edge_id;
 }
 
 
@@ -99,7 +155,10 @@ void viewport_set_zoom(viewport_t *viewport, vec2f_t viewport_pos, float zoom_de
     vec2f_t world_pos = mat23f_vec2f_mul(viewport->viewport_to_world, viewport_pos);
     viewport->focus_world_pos = vec2f_add(
         world_pos,
-        vec2f_scalar_mul(vec2f_sub(viewport->focus_world_pos, world_pos), old_zoom / viewport->zoom)
+        vec2f_scalar_mul(
+            vec2f_sub(viewport->focus_world_pos, world_pos),
+            old_zoom / viewport->zoom
+        )
     );
     viewport_calc_transforms(viewport);
 }
@@ -177,7 +236,7 @@ static void viewport_draw_grid(const viewport_t *viewport) {
 #define VIEWPORT_EDGE_THICKNESS 3
 
 
-static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *subzone, arena_t scratch) {
+static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *subzone, uint32_t colour, arena_t scratch) {
     const world_t *world = &viewport->boomed->world;
     const vertex_t *vertices = world->vertices;
 
@@ -190,7 +249,7 @@ static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *s
             vec2f_make_from_vec2i(vertices[subzone->vertex_ids[n]].position)
         );
     }
-    draw_polygon(points, num_vertices, 0xFF808090);
+    draw_polygon(points, num_vertices, colour);
 }
 
 static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
@@ -202,11 +261,16 @@ static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
         mat23f_vec2f_mul(viewport->viewport_to_world, viewport->size)
     );
 
+    static uint32_t zone_colours[16] = {
+        0xFF808090, 0xFF809080, 0xFF908080, 0xFF809090, 0xFF908090, 0xFF909080, 0xFF708090, 0xFF708080,
+        0xFF907080, 0xFF809070, 0xFF707080, 0xFF807080, 0xFF709080, 0xFF908070, 0xFF807070, 0xFF807090
+    };
+
     for (uint32_t i = 0; i < world->zones_num; ++i) {
         const zone_t *zone = &world->zones[i];
         if (aabb2f_intersects(viewport_aabb, zone->aabb)) {
             for (uint32_t j = 0; j < zone->subzones_num; ++j) {
-                viewport_draw_subzone(viewport, &zone->subzones[j], scratch);
+                viewport_draw_subzone(viewport, &zone->subzones[j], zone_colours[i & 0xF], scratch);
             }
         }
     }

@@ -3,17 +3,33 @@
 #include "boomed/math/aabb2f.h"
 
 
+void edge_set_zone_by_vertex(edge_t *edge, element_id_t vertex_id, element_id_t zone_id) {
+    if (edge->vertex_ids[0] == vertex_id) {
+        edge->zone_ids[0] = zone_id;
+    }
+    else if (edge->vertex_ids[1] == vertex_id) {
+        edge->zone_ids[1] = zone_id;
+    }
+}
+
+
+element_id_t edge_get_zone_by_vertex(const edge_t *edge, element_id_t vertex_id) {
+    assert(edge);
+    assert(vertex_id != ID_NONE);
+
+    return (edge->vertex_ids[0] == vertex_id) ? edge->zone_ids[0] :
+           (edge->vertex_ids[1] == vertex_id) ? edge->zone_ids[1] :
+           ID_NONE;
+}
+
+
 element_id_t edge_get_other_vertex(const edge_t *edge, element_id_t vertex_id) {
     assert(edge);
     assert(vertex_id != ID_NONE);
 
-    if (vertex_id == edge->vertex_ids[0]) {
-        return edge->vertex_ids[1];
-    }
-    else if (vertex_id == edge->vertex_ids[1]) {
-        return edge->vertex_ids[0];
-    }
-    return ID_NONE;
+    return (edge->vertex_ids[0] == vertex_id) ? edge->vertex_ids[1] :
+           (edge->vertex_ids[1] == vertex_id) ? edge->vertex_ids[0] :
+           ID_NONE;
 }
 
 
