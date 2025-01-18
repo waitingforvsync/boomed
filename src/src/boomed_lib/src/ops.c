@@ -53,7 +53,7 @@ op_fns[] = {
 };
 
 
-uint32_t do_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index) {
+uint32_t exec_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index) {
     assert(ops[index].type == op_type_sentinel);
     if (index != ops_num - 1) {
         for (++index; ops[index].type != op_type_sentinel; ++index) {

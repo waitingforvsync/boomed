@@ -16,7 +16,7 @@ typedef struct op_edge_add_t op_edge_add_t;
 typedef struct op_edge_split_t op_edge_split_t;
 typedef struct op_edge_delete_t op_edge_delete_t;
 
-enum op_type {
+enum op_type_t {
     op_type_sentinel,
     op_type_vertex_add,
     op_type_vertex_move,
@@ -83,7 +83,7 @@ struct op_t {
 
 
 
-uint32_t do_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
+uint32_t exec_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
 uint32_t undo_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
 
 #endif // ifndef BOOMED_OPS_H_
