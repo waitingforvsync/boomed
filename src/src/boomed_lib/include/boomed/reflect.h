@@ -13,18 +13,17 @@ enum reflect_type_t {
 };
 
 
-typedef struct reflect_desc_t reflect_desc_t;
+typedef struct reflect_struct_desc_t reflect_struct_desc_t;
 typedef struct reflect_member_desc_t reflect_member_desc_t;
 
-struct reflect_desc_t {
+struct reflect_struct_desc_t {
     const reflect_member_desc_t *member_descs;
     uint32_t num_member_descs;
 };
 
 struct reflect_member_desc_t {
     const char *name;
-    reflect_desc_t desc;
-    uint32_t desc_size;
+    reflect_struct_desc_t struct_desc;
     uint32_t num_elements;
     uint32_t offset;
     uint32_t element_size;
