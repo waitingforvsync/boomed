@@ -1,0 +1,202 @@
+#include "boomed/defines.h"
+#include "boomed/arena.h"
+
+
+#ifndef TEMPLATE_NAME
+#error Must define TEMPLATE_NAME with the prefix of the array type name
+#endif
+
+#ifndef TEMPLATE_TYPE
+#error Must define TEMPLATE_TYPE with the element type of the array
+#endif
+
+
+#define TYPE_t                   TEMPLATE_TYPE
+#define NAME_array_t             CONCAT(TEMPLATE_NAME, _array_t)
+#define NAME_view_t              CONCAT(TEMPLATE_NAME, _view_t)
+#define NAME_slice_t             CONCAT(TEMPLATE_NAME, _slice_t)
+#define NAME_array_make          CONCAT(TEMPLATE_NAME, _array_make)
+#define NAME_slice_make          CONCAT(TEMPLATE_NAME, _slice_make)
+#define NAME_view_make           CONCAT(TEMPLATE_NAME, _view_make)
+#define NAME_array_reserve       CONCAT(TEMPLATE_NAME, _array_reserve)
+#define NAME_array_resize        CONCAT(TEMPLATE_NAME, _array_resize)
+#define NAME_array_reset         CONCAT(TEMPLATE_NAME, _array_reset)
+#define NAME_array_add           CONCAT(TEMPLATE_NAME, _array_add)
+#define NAME_array_push          CONCAT(TEMPLATE_NAME, _array_push)
+#define NAME_array_pop           CONCAT(TEMPLATE_NAME, _array_pop)
+#define NAME_array_set           CONCAT(TEMPLATE_NAME, _array_set)
+#define NAME_slice_set           CONCAT(TEMPLATE_NAME, _slice_set)
+#define NAME_array_get           CONCAT(TEMPLATE_NAME, _array_get)
+#define NAME_array_get_ptr       CONCAT(TEMPLATE_NAME, _array_get_ptr)
+#define NAME_array_get_last      CONCAT(TEMPLATE_NAME, _array_get_last)
+#define NAME_array_get_last_ptr  CONCAT(TEMPLATE_NAME, _array_get_last_ptr)
+#define NAME_view_get            CONCAT(TEMPLATE_NAME, _view_get)
+#define NAME_view_get_ptr        CONCAT(TEMPLATE_NAME, _view_get_ptr)
+#define NAME_view_get_last       CONCAT(TEMPLATE_NAME, _view_get_last)
+#define NAME_view_get_last_ptr   CONCAT(TEMPLATE_NAME, _view_get_last_ptr)
+
+
+typedef struct NAME_view_t {
+    const TYPE_t *data;
+    uint32_t num;
+} NAME_view_t;
+
+typedef struct NAME_slice_t {
+    union {
+        struct {
+            TYPE_t *data;
+            uint32_t num;
+        };
+        NAME_view_t view;
+    };
+} NAME_slice_t;
+
+typedef struct NAME_array_t {
+    union {
+        struct {
+            TYPE_t *data;
+            uint32_t num;
+        };
+        NAME_view_t view;
+        NAME_slice_t slice;
+    };
+    uint32_t capacity;
+} NAME_array_t;
+
+
+static inline NAME_array_t NAME_array_make(arena_t *arena, uint32_t initial_capacity) {
+    return (NAME_array_t) {
+        .data = arena_alloc(arena, initial_capacity * sizeof(TYPE_t)),
+        .num = 0,
+        .capacity = initial_capacity
+    };
+}
+
+static inline NAME_slice_t NAME_slice_make(TYPE_t *data, uint32_t num) {
+    return (NAME_slice_t) {
+        .data = data,
+        .num = num
+    };
+}
+
+static inline NAME_view_t NAME_view_make(const TYPE_t *data, uint32_t num) {
+    return (NAME_view_t) {
+        .data = data,
+        .num = num
+    };
+}
+
+static inline void NAME_array_reserve(NAME_array_t *array, arena_t *arena, uint32_t capacity) {
+    if (capacity > array->capacity) {
+        array->data = arena_realloc(arena, array->data, array->capacity * sizeof(TYPE_t), capacity * sizeof(TYPE_t));
+        array->capacity = capacity;
+    }
+}
+
+static inline void NAME_array_resize(NAME_array_t *array, arena_t *arena, uint32_t size) {
+    if (size > array->capacity) {
+        NAME_array_reserve(array, arena, size);
+    }
+    array->num = size;
+}
+
+static inline void NAME_array_reset(NAME_array_t *array) {
+    array->num = 0;
+}
+
+static inline uint32_t NAME_array_add(NAME_array_t *array, arena_t *arena, TYPE_t value) {
+    if (array->num == array->capacity) {
+        NAME_array_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
+    }
+    array->data[array->num] = value;
+    return array->num++;
+}
+
+static inline uint32_t NAME_array_push(NAME_array_t *array, arena_t *arena) {
+    if (array->num == array->capacity) {
+        NAME_array_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
+    }
+    return array->num++;
+}
+
+static inline uint32_t NAME_array_pop(NAME_array_t *array) {
+    return array->num--;
+}
+
+static inline void NAME_array_set(const NAME_array_t *array, uint32_t index, TYPE_t value) {
+    always_assert(index < array->num);
+    array->data[index] = value;
+}
+
+static inline void NAME_slice_set(NAME_slice_t slice, uint32_t index, TYPE_t value) {
+    always_assert(index < slice.num);
+    slice.data[index] = value;
+}
+
+static inline TYPE_t NAME_array_get(const NAME_array_t *array, uint32_t index) {
+    always_assert(index < array->num);
+    return array->data[index];
+}
+
+static inline TYPE_t *NAME_array_get_ptr(const NAME_array_t *array, uint32_t index) {
+    always_assert(index < array->num);
+    return array->data + index;
+}
+
+static inline TYPE_t NAME_array_get_last(const NAME_array_t *array) {
+    always_assert(array->num > 0);
+    return array->data[array->num - 1];
+}
+
+static inline TYPE_t *NAME_array_get_last_ptr(const NAME_array_t *array) {
+    always_assert(array->num > 0);
+    return array->data + array->num - 1;
+}
+
+static inline TYPE_t NAME_view_get(NAME_view_t view, uint32_t index) {
+    always_assert(index < view.num);
+    return view.data[index];
+}
+
+static inline const TYPE_t *NAME_view_get_ptr(NAME_view_t view, uint32_t index) {
+    always_assert(index < view.num);
+    return view.data + index;
+}
+
+static inline TYPE_t NAME_view_get_last(NAME_view_t view) {
+    always_assert(view.num > 0);
+    return view.data[view.num - 1];
+}
+
+static inline const TYPE_t *NAME_view_get_last_ptr(NAME_view_t view) {
+    always_assert(view.num > 0);
+    return view.data + view.num - 1;
+}
+
+
+#undef TYPE_t
+#undef NAME_array_t
+#undef NAME_view_t
+#undef NAME_slice_t
+#undef NAME_array_make
+#undef NAME_slice_make
+#undef NAME_view_make
+#undef NAME_array_reserve
+#undef NAME_array_resize
+#undef NAME_array_reset
+#undef NAME_array_add
+#undef NAME_array_push
+#undef NAME_array_pop
+#undef NAME_array_set
+#undef NAME_slice_set
+#undef NAME_array_get
+#undef NAME_array_get_ptr
+#undef NAME_array_get_last
+#undef NAME_array_get_last_ptr
+#undef NAME_view_get
+#undef NAME_view_get_ptr
+#undef NAME_view_get_last
+#undef NAME_view_get_last_ptr
+
+#undef TEMPLATE_NAME
+#undef TEMPLATE_TYPE

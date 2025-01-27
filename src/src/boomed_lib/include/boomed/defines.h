@@ -1,0 +1,23 @@
+#ifndef BOOMED_DEFINES_H_
+#define BOOMED_DEFINES_H_
+
+#include <stdint.h>
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
+#ifdef _MSC_VER
+#define trap() __debugbreak()
+#else
+#define trap() __builtin_trap()
+#endif
+
+#define assert(cond) ((void)((cond) || (trap(), 0)))
+#define always_assert(cond) ((void)((cond) || (trap(), 0)))
+#define static_assert(cond, msg) _Static_assert(cond, msg)
+
+#define CONCAT(a, b) CONCAT2(a, b)
+#define CONCAT2(a, b) a##b
+
+
+#endif // ifndef BOOMED_DEFINES_H_

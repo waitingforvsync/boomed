@@ -1,13 +1,12 @@
-#include <assert.h>
+#include "boomed/defines.h"
 #include "boomed/world/zone.h"
 #include "boomed/world/vertex.h"
 #include "boomed/world/edge.h"
 #include "boomed/world/subzone.h"
 
 
-void zone_build_subzones(zone_t *zone, const vertex_t *vertices, const edge_t *edges, arena_t *arena, arena_t scratch) {
+void zone_build_subzones(zone_t *zone, vertex_view_t vertices, const edge_t *edges, arena_t *arena, arena_t scratch) {
     assert(zone);
-    assert(vertices);
     assert(edges);
 
     const element_id_t *vertex_ids = contour_get_vertices(&zone->perimeter, edges, &scratch);
@@ -25,9 +24,8 @@ void zone_build_subzones(zone_t *zone, const vertex_t *vertices, const edge_t *e
 }
 
 
-aabb2f_t zone_get_aabb(const zone_t *zone, const vertex_t *vertices, const edge_t *edges) {
+aabb2f_t zone_get_aabb(const zone_t *zone, vertex_view_t vertices, const edge_t *edges) {
     assert(zone);
-    assert(vertices);
     assert(edges);
     
     const element_id_t *edge_ids = zone->perimeter.edge_ids;

@@ -16,6 +16,11 @@ struct vertex_t {
 };
 
 
+#define TEMPLATE_NAME vertex
+#define TEMPLATE_TYPE vertex_t
+#include "boomed/templates/array.h.template"
+
+
 vertex_t vertex_make(vec2i_t position, arena_t *ids_arena);
 
 uint32_t vertex_get_connected_edge_index(const vertex_t *vertex, element_id_t edge_id);

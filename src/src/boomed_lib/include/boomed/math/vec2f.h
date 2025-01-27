@@ -1,10 +1,10 @@
 #ifndef BOOMED_MATH_VEC2F_H_
 #define BOOMED_MATH_VEC2F_H_
 
-#include <assert.h>
 #include <stdbool.h>
 #include <math.h>
-#include "vec2i.h"
+#include "boomed/defines.h"
+#include "boomed/math/vec2i.h"
 
 
 typedef struct vec2f_t vec2f_t;

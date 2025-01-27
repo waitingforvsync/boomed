@@ -1,5 +1,5 @@
-#include <assert.h>
 #include <stdbool.h>
+#include "boomed/defines.h"
 #include "boomed/ops.h"
 #include "boomed/boomed.h"
 #include "boomed/world/world.h"

@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include "boomed/defines.h"
 #include "boomed/arena.h"
 
 #define ARENA_BLOCK_HEADER_SIZE (32U)

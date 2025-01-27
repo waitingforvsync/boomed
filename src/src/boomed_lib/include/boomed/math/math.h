@@ -1,12 +1,8 @@
 #ifndef BOOMED_MATH_MATH_H_
 #define BOOMED_MATH_MATH_H_
 
-#include <assert.h>
 #include <stdbool.h>
-#include <stdint.h>
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
+#include "boomed/defines.h"
 
 
 static inline float deg_to_rad(float degrees) {

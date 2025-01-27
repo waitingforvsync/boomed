@@ -3,8 +3,8 @@
 
 #include "boomed/array.h"
 #include "boomed/world/element_id.h"
+#include "boomed/world/vertex.h"
 
-typedef struct vertex_t vertex_t;
 typedef struct edge_t edge_t;
 typedef struct contour_t contour_t;
 typedef struct zone_t zone_t;
@@ -28,7 +28,7 @@ typedef struct vec2f_t vec2f_t;
 
 struct world_t {
     arena_t arena;
-    array_t(vertex_t, vertices);
+    vertex_array_t vertices;
     array_t(edge_t, edges);
     array_t(zone_t, zones);
 };

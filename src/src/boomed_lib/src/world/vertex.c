@@ -1,4 +1,4 @@
-#include <assert.h>
+#include "boomed/defines.h"
 #include "boomed/world/vertex.h"
 
 
