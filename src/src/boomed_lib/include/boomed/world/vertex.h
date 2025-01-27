@@ -15,7 +15,7 @@ struct vertex_t {
     array_t(element_id_t, edge_ids);
 };
 
-
+// Define vertex_t array type
 #define TEMPLATE_NAME vertex
 #define TEMPLATE_TYPE vertex_t
 #include "boomed/templates/array.h.template"

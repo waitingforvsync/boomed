@@ -23,6 +23,11 @@ struct edge_t {
     uint8_t lower_colour;
 };
 
+// Define edge_t array type
+#define TEMPLATE_NAME edge
+#define TEMPLATE_TYPE edge_t
+#include "boomed/templates/array.h.template"
+
 
 void edge_set_zone_by_vertex(edge_t *edge, element_id_t vertex_id, element_id_t zone_id);
 element_id_t edge_get_zone_by_vertex(const edge_t *edge, element_id_t vertex_id);

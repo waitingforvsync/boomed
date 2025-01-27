@@ -30,6 +30,10 @@
 #define NAME_array_get_ptr       CONCAT(TEMPLATE_NAME, _array_get_ptr)
 #define NAME_array_get_last      CONCAT(TEMPLATE_NAME, _array_get_last)
 #define NAME_array_get_last_ptr  CONCAT(TEMPLATE_NAME, _array_get_last_ptr)
+#define NAME_slice_get           CONCAT(TEMPLATE_NAME, _slice_get)
+#define NAME_slice_get_ptr       CONCAT(TEMPLATE_NAME, _slice_get_ptr)
+#define NAME_slice_get_last      CONCAT(TEMPLATE_NAME, _slice_get_last)
+#define NAME_slice_get_last_ptr  CONCAT(TEMPLATE_NAME, _slice_get_last_ptr)
 #define NAME_view_get            CONCAT(TEMPLATE_NAME, _view_get)
 #define NAME_view_get_ptr        CONCAT(TEMPLATE_NAME, _view_get_ptr)
 #define NAME_view_get_last       CONCAT(TEMPLATE_NAME, _view_get_last)
@@ -153,6 +157,26 @@ static inline TYPE_t *NAME_array_get_last_ptr(const NAME_array_t *array) {
     return array->data + array->num - 1;
 }
 
+static inline TYPE_t NAME_slice_get(NAME_slice_t slice, uint32_t index) {
+    always_assert(index < slice.num);
+    return slice.data[index];
+}
+
+static inline TYPE_t *NAME_slice_get_ptr(NAME_slice_t slice, uint32_t index) {
+    always_assert(index < slice.num);
+    return slice.data + index;
+}
+
+static inline TYPE_t NAME_slice_get_last(NAME_slice_t slice) {
+    always_assert(slice.num > 0);
+    return slice.data[slice.num - 1];
+}
+
+static inline TYPE_t *NAME_slice_get_last_ptr(NAME_slice_t slice) {
+    always_assert(slice.num > 0);
+    return slice.data + slice.num - 1;
+}
+
 static inline TYPE_t NAME_view_get(NAME_view_t view, uint32_t index) {
     always_assert(index < view.num);
     return view.data[index];
@@ -193,6 +217,10 @@ static inline const TYPE_t *NAME_view_get_last_ptr(NAME_view_t view) {
 #undef NAME_array_get_ptr
 #undef NAME_array_get_last
 #undef NAME_array_get_last_ptr
+#undef NAME_slice_get
+#undef NAME_slice_get_ptr
+#undef NAME_slice_get_last
+#undef NAME_slice_get_last_ptr
 #undef NAME_view_get
 #undef NAME_view_get_ptr
 #undef NAME_view_get_last

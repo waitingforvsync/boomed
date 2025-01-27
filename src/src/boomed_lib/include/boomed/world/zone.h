@@ -7,7 +7,7 @@
 #include "boomed/world/contour.h"
 
 typedef struct vertex_view_t vertex_view_t;
-typedef struct edge_t edge_t;
+typedef struct edge_view_t edge_view_t;
 typedef struct subzone_t subzone_t;
 typedef struct zone_t zone_t;
 typedef struct arena_t arena_t;
@@ -32,9 +32,9 @@ struct zone_t {
 };
 
 
-void zone_build_subzones(zone_t *zone, vertex_view_t vertices, const edge_t *edges, arena_t *arena, arena_t scratch);
+void zone_build_subzones(zone_t *zone, vertex_view_t vertices, edge_view_t edges, arena_t *arena, arena_t scratch);
 
-aabb2f_t zone_get_aabb(const zone_t *zone, vertex_view_t vertices, const edge_t *edges);
+aabb2f_t zone_get_aabb(const zone_t *zone, vertex_view_t vertices, edge_view_t edges);
 
 
 #endif // ifndef BOOMED_WORLD_ZONE_H_

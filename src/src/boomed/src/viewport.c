@@ -3,7 +3,6 @@
 #include "boomed/math/aabb2f.h"
 #include "boomed/math/mat23f.h"
 #include "boomed/boomed.h"
-#include "boomed/world/edge.h"
 #include "boomed/world/subzone.h"
 #include "boomed/world/zone.h"
 
@@ -278,7 +277,7 @@ static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
 static void viewport_draw_edges(const viewport_t *viewport) {
     const world_t *world = &viewport->boomed->world;
     vertex_view_t vertices = world->vertices.view;
-    const edge_t *edges = world->edges;
+    edge_view_t edges = world->edges.view;
 
     aabb2f_t viewport_aabb = aabb2f_make_with_margin(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),
@@ -286,11 +285,11 @@ static void viewport_draw_edges(const viewport_t *viewport) {
         VIEWPORT_EDGE_THICKNESS / viewport->zoom
     );
 
-    for (uint32_t i = 0; i < world->edges_num; ++i) {
-        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edges + i, vertices))) {
+    for (uint32_t i = 0; i < edges.num; ++i) {
+        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edge_view_get_ptr(edges, i), vertices))) {
             draw_thick_line(
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertex_view_get(vertices, edges[i].vertex_ids[0]).position)),
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertex_view_get(vertices, edges[i].vertex_ids[1]).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertex_view_get(vertices, edge_view_get(edges, i).vertex_ids[0]).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertex_view_get(vertices, edge_view_get(edges, i).vertex_ids[1]).position)),
                 VIEWPORT_EDGE_THICKNESS,
                 (i == viewport->highlighted_edge) ? 0xFF0000FF : 0xFF000000
             );
