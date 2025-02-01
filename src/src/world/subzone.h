@@ -11,5 +11,10 @@ struct subzone_t {
     array_t(element_id_t, vertex_ids);
 };
 
+// Define subzone_t array type
+#define TEMPLATE_NAME subzones
+#define TEMPLATE_TYPE subzone_t
+#include "templates/array.h.template"
+
 
 #endif // ifndef WORLD_SUBZONE_H_

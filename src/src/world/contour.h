@@ -18,6 +18,11 @@ struct contour_t {
     array_t(element_id_t, edge_ids);
 };
 
+// Define contour_t array type
+#define TEMPLATE_NAME contours
+#define TEMPLATE_TYPE contour_t
+#include "templates/array.h.template"
+
 
 contour_t contour_make(vertices_view_t vertices, edges_view_t edges, element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena);
 contour_t contour_make_copy(const contour_t *contour_to_copy, arena_t *arena);

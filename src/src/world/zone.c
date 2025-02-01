@@ -11,14 +11,15 @@ void zone_build_subzones(zone_t *zone, vertices_view_t vertices, edges_view_t ed
     const element_id_t *vertex_ids = contour_get_vertices(&zone->perimeter, edges, &scratch);
     uint32_t num_vertices = zone->perimeter.edge_ids_num;
 
-    array_reset(zone->subzones);
-    uint32_t i = array_push(zone->subzones, arena);
+    subzones_reset(&zone->subzones);
+    uint32_t i = subzones_push(&zone->subzones, arena);
 
-    array_init_reserve(zone->subzones[i].vertex_ids, arena, 32);
-    array_resize(zone->subzones[i].vertex_ids, arena, num_vertices);
+    subzone_t *subzone = subzones_get_ptr(&zone->subzones, i);
+    array_init_reserve(subzone->vertex_ids, arena, 32);
+    array_resize(subzone->vertex_ids, arena, num_vertices);
 
     for (uint32_t j = 0; j < num_vertices; ++j) {
-        zone->subzones[i].vertex_ids[j] = vertex_ids[j];
+        subzone->vertex_ids[j] = vertex_ids[j];
     }
 }
 

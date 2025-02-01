@@ -5,9 +5,8 @@
 #include "world/element_id.h"
 #include "world/vertex.h"
 #include "world/edge.h"
+#include "world/zone.h"
 
-typedef struct contour_t contour_t;
-typedef struct zone_t zone_t;
 typedef struct world_t world_t;
 typedef struct vec2i_t vec2i_t;
 typedef struct vec2f_t vec2f_t;
@@ -30,7 +29,7 @@ struct world_t {
     arena_t arena;
     vertices_t vertices;
     edges_t edges;
-    array_t(zone_t, zones);
+    zones_t zones;
 };
 
 

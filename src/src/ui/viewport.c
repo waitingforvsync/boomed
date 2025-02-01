@@ -252,7 +252,7 @@ static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *s
 
 static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
     const world_t *world = &viewport->boomed->world;
-    const zone_t *zones = world->zones;
+    zones_view_t zones = world->zones.view;
 
     aabb2f_t viewport_aabb = aabb2f_make(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),
@@ -264,11 +264,11 @@ static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
         0xFF907080, 0xFF809070, 0xFF707080, 0xFF807080, 0xFF709080, 0xFF908070, 0xFF807070, 0xFF807090
     };
 
-    for (uint32_t i = 0; i < world->zones_num; ++i) {
-        const zone_t *zone = &world->zones[i];
+    for (uint32_t i = 0; i < world->zones.num; ++i) {
+        const zone_t *zone = zones_view_get_ptr(zones, i);
         if (aabb2f_intersects(viewport_aabb, zone->aabb)) {
-            for (uint32_t j = 0; j < zone->subzones_num; ++j) {
-                viewport_draw_subzone(viewport, &zone->subzones[j], zone_colours[i & 0xF], scratch);
+            for (uint32_t j = 0; j < zone->subzones.num; ++j) {
+                viewport_draw_subzone(viewport, subzones_get_ptr(&zone->subzones, j), zone_colours[i & 0xF], scratch);
             }
         }
     }

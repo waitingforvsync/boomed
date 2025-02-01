@@ -10,7 +10,7 @@ void world_init(world_t *world) {
     world->arena = arena_make();
     world->vertices = vertices_make(&world->arena, 8192);
     world->edges = edges_make(&world->arena, 8192);
-    array_init_reserve(world->zones, &world->arena, 1024);
+    world->zones = zones_make(&world->arena, 1024);
 }
 
 
@@ -18,7 +18,7 @@ void world_reset(world_t *world) {
     assert(world);
     vertices_reset(&world->vertices);
     edges_reset(&world->edges);
-    array_reset(world->zones);
+    zones_reset(&world->zones);
     arena_reset(&world->arena);
 }
 
@@ -64,8 +64,8 @@ bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t n
         world_replace_ids(edges_slice_get(edges, i).vertex_ids, 2, old_index, new_index);
     }
 
-    for (uint32_t i = 0; i < world->zones_num; ++i) {
-        zone_t *zone = &world->zones[i];
+    for (uint32_t i = 0; i < world->zones.num; ++i) {
+        zone_t *zone = zones_get_ptr(&world->zones, i);
         world_replace_ids(
             zone->perimeter.edge_ids,
             zone->perimeter.edge_ids_num,
@@ -73,10 +73,10 @@ bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t n
             new_index
         );
 
-        for (uint32_t j = 0; j < zone->holes_num; ++j) {
+        for (uint32_t j = 0; j < zone->holes.num; ++j) {
             world_replace_ids(
-                zone->holes[j].edge_ids,
-                zone->holes[j].edge_ids_num,
+                zone->holes.data[j].edge_ids,
+                zone->holes.data[j].edge_ids_num,
                 old_index,
                 new_index
             );
@@ -181,8 +181,8 @@ static void world_find_zone_holes(world_t *world, element_id_t zone_id) {
 element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *ids_arena, arena_t scratch) {
     assert(world);
     assert(contour);
-    element_id_t zone_id = (element_id_t)array_add(
-        world->zones,
+    element_id_t zone_id = (element_id_t)zones_add(
+        &world->zones,
         &world->arena,
         (zone_t) {
             .perimeter = contour_make_copy(contour, ids_arena),
@@ -194,12 +194,12 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *i
         }
     );
 
-    zone_t *zone = &world->zones[zone_id];
+    zone_t *zone = zones_get_ptr(&world->zones, zone_id);
     vertices_view_t vertices = world->vertices.view;
     edges_view_t edges = world->edges.view;
 
-    array_init_reserve(zone->holes, ids_arena, 8);
-    array_init_reserve(zone->subzones, ids_arena, 32);
+    zone->holes = contours_make(ids_arena, 8);
+    zone->subzones = subzones_make(ids_arena, 32);
     array_init_reserve(zone->inner_zone_ids, ids_arena, 32);
 
     zone->aabb = zone_get_aabb(zone, vertices, edges);
