@@ -1,5 +1,5 @@
-#ifndef MATH_VEC2I_H_
-#define MATH_VEC2I_H_
+#ifndef VEC2I_H_
+#define VEC2I_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -132,4 +132,4 @@ static inline const int32_t *vec2i_as_int32s(const vec2i_t *a) {
 
 
 
-#endif // ifndef MATH_VEC2I_H_
+#endif // ifndef VEC2I_H_

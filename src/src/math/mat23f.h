@@ -1,5 +1,5 @@
-#ifndef MATH_MAT23F_H_
-#define MATH_MAT23F_H_
+#ifndef MAT23F_H_
+#define MAT23F_H_
 
 #include "math/mat22f.h"
 
@@ -77,4 +77,4 @@ static inline mat23f_t mat23f_inverse(mat23f_t m) {
 }
 
 
-#endif // ifndef MATH_MAT23F_H_
+#endif // ifndef MAT23F_H_

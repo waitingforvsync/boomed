@@ -1,5 +1,5 @@
-#ifndef WORLD_EDGE_H_
-#define WORLD_EDGE_H_
+#ifndef EDGE_H_
+#define EDGE_H_
 
 #include "world/element_id.h"
 
@@ -35,4 +35,4 @@ element_id_t edge_get_other_vertex(const edge_t *edge, element_id_t vertex_id);
 aabb2f_t edge_get_aabb(const edge_t *edge, vertices_view_t vertices);
 
 
-#endif // ifndef WORLD_EDGE_H_
+#endif // ifndef EDGE_H_

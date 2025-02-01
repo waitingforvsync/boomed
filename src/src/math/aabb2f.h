@@ -1,5 +1,5 @@
-#ifndef MATH_AABB2F_H_
-#define MATH_AABB2F_H_
+#ifndef AABB2F_H_
+#define AABB2F_H_
 
 #include "math/vec2f.h"
 
@@ -53,4 +53,4 @@ static inline aabb2f_t aabb2f_vec2f_union(aabb2f_t a, vec2f_t b) {
 }
 
 
-#endif // MATH_AABB2F_H_
+#endif // AABB2F_H_

@@ -1,5 +1,5 @@
-#ifndef MATH_MAT22F_H_
-#define MATH_MAT22F_H_
+#ifndef MAT22F_H_
+#define MAT22F_H_
 
 #include "math/vec2f.h"
 
@@ -99,4 +99,4 @@ static inline mat22f_t mat22f_inverse(mat22f_t a) {
 
 
 
-#endif // ifndef MATH_MAT22F_H_
+#endif // ifndef MAT22F_H_

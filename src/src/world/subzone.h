@@ -1,5 +1,5 @@
-#ifndef WORLD_SUBZONE_H_
-#define WORLD_SUBZONE_H_
+#ifndef SUBZONE_H_
+#define SUBZONE_H_
 
 #include "world/element_id.h"
 
@@ -21,4 +21,4 @@ subzone_t subzone_make(arena_t *arena);
 #include "templates/array.h.template"
 
 
-#endif // ifndef WORLD_SUBZONE_H_
+#endif // ifndef SUBZONE_H_

@@ -1,5 +1,5 @@
-#ifndef WORLD_WORLD_H_
-#define WORLD_WORLD_H_
+#ifndef WORLD_H_
+#define WORLD_H_
 
 #include "world/element_id.h"
 #include "world/vertex.h"
@@ -58,4 +58,4 @@ element_id_t world_find_edge_closest_to_point(const world_t *world, vec2f_t poin
 
 
 
-#endif // ifndef WORLD_WORLD_H_
+#endif // ifndef WORLD_H_

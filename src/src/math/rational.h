@@ -1,5 +1,5 @@
-#ifndef BOOMED_MATH_RATIONAL_H_
-#define BOOMED_MATH_RATIONAL_H_
+#ifndef RATIONAL_H_
+#define RATIONAL_H_
 
 #include "math/math.h"
 
@@ -88,4 +88,4 @@ static inline rational_t rational_sub(rational_t a, rational_t b) {
 
 
 
-#endif // ifndef MATH_RATIONAL_H_
+#endif // ifndef RATIONAL_H_

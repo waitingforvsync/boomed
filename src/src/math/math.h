@@ -1,5 +1,5 @@
-#ifndef MATH_MATH_H_
-#define MATH_MATH_H_
+#ifndef MATH_H_
+#define MATH_H_
 
 #include "base/defines.h"
 
@@ -100,4 +100,4 @@ static inline bool does_add_overflow_uint64(uint64_t a, uint64_t b) {
 
 
 
-#endif // ifndef MATH_MATH_H_
+#endif // ifndef MATH_H_

@@ -25,7 +25,7 @@ uint32_t vertex_get_connected_edge_index(const vertex_t *vertex, element_id_t ed
 }
 
 
-element_id_t vertex_get_prev_edge(const vertex_t *vertex, element_id_t edge_id) {
+element_id_t vertex_get_prev_connected_edge(const vertex_t *vertex, element_id_t edge_id) {
     assert(vertex);
     assert(!element_ids_is_empty(&vertex->edge_ids));
     uint32_t i = vertex_get_connected_edge_index(vertex, edge_id);
@@ -36,7 +36,7 @@ element_id_t vertex_get_prev_edge(const vertex_t *vertex, element_id_t edge_id) 
 }
 
 
-element_id_t vertex_get_next_edge(const vertex_t *vertex, element_id_t edge_id) {
+element_id_t vertex_get_next_connected_edge(const vertex_t *vertex, element_id_t edge_id) {
     assert(vertex);
     assert(!element_ids_is_empty(&vertex->edge_ids));
     uint32_t i = vertex_get_connected_edge_index(vertex, edge_id);

@@ -1,5 +1,5 @@
-#ifndef WORLD_VERTEX_H_
-#define WORLD_VERTEX_H_
+#ifndef VERTEX_H_
+#define VERTEX_H_
 
 #include "math/vec2i.h"
 #include "world/element_id.h"
@@ -23,9 +23,9 @@ struct vertex_t {
 vertex_t vertex_make(vec2i_t position, arena_t *ids_arena);
 
 uint32_t vertex_get_connected_edge_index(const vertex_t *vertex, element_id_t edge_id);
-element_id_t vertex_get_prev_edge(const vertex_t *vertex, element_id_t edge_id);
-element_id_t vertex_get_next_edge(const vertex_t *vertex, element_id_t edge_id);
+element_id_t vertex_get_prev_connected_edge(const vertex_t *vertex, element_id_t edge_id);
+element_id_t vertex_get_next_connected_edge(const vertex_t *vertex, element_id_t edge_id);
 
 
 
-#endif // ifndef WORLD_VERTEX_H_
+#endif // ifndef VERTEX_H_

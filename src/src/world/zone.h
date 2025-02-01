@@ -1,5 +1,5 @@
-#ifndef WORLD_ZONE_H_
-#define WORLD_ZONE_H_
+#ifndef ZONE_H_
+#define ZONE_H_
 
 #include "math/aabb2f.h"
 #include "world/element_id.h"
@@ -41,4 +41,4 @@ void zone_build_subzones(zone_t *zone, vertices_view_t vertices, edges_view_t ed
 aabb2f_t zone_get_aabb(const zone_t *zone, vertices_view_t vertices, edges_view_t edges);
 
 
-#endif // ifndef WORLD_ZONE_H_
+#endif // ifndef ZONE_H_

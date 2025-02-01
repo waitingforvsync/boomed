@@ -1,5 +1,5 @@
-#ifndef WORLD_CONTOUR_H_
-#define WORLD_CONTOUR_H_
+#ifndef CONTOUR_H_
+#define CONTOUR_H_
 
 #include <stdbool.h>
 #include "world/element_id.h"
@@ -34,4 +34,4 @@ bool contour_is_perimeter(const contour_t *contour, vertices_view_t vertices, ed
 bool contour_is_hole(const contour_t *contour, vertices_view_t vertices, edges_view_t edges);
 
 
-#endif // ifndef WORLD_CONTOUR_H_
+#endif // ifndef CONTOUR_H_

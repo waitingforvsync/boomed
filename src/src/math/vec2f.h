@@ -1,5 +1,5 @@
-#ifndef MATH_VEC2F_H_
-#define MATH_VEC2F_H_
+#ifndef VEC2F_H_
+#define VEC2F_H_
 
 #include <math.h>
 #include "base/defines.h"
@@ -206,4 +206,4 @@ static inline const float *vec2f_as_floats(const vec2f_t *a) {
 #include "templates/array.h.template"
 
 
-#endif // ifndef MATH_VEC2F_H_
+#endif // ifndef VEC2F_H_
