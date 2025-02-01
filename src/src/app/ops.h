@@ -81,6 +81,11 @@ struct op_t {
     };
 };
 
+// Define op_t array type
+#define TEMPLATE_NAME ops
+#define TEMPLATE_TYPE op_t
+#include "templates/array.h.template"
+
 
 
 uint32_t exec_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);

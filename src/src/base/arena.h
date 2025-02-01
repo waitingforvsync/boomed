@@ -23,9 +23,10 @@ void arena_reset(arena_t *arena);
 uint32_t arena_get_current_block_size(const arena_t *arena);
 
 #define arena_new(type, arena) ((type *)arena_alloc(arena, sizeof(type)))
-#define arena_new_n(type, num, arena) ((type *)arena_alloc(arena, sizeof(type) * (num)))
+#define arena_new_n(type, n, arena) ((type *)arena_alloc(arena, sizeof(type) * (n)))
+#define arena_new_slice(type, n, arena) {.data = arena_new_n(type, n, arena), .num = n}
 #define arena_new_zeroed(type, arena) ((type *)arena_calloc(arena, sizeof(type)))
-#define arena_new_zeroed_n(type, num, arena) ((type *)arena_calloc(arena, sizeof(type) * (num)))
+#define arena_new_zeroed_n(type, n, arena) ((type *)arena_calloc(arena, sizeof(type) * (n)))
 #define arena_destroy(arena, ptr) arena_free(arena, ptr, sizeof(*ptr))
 #define arena_destroy_n(arena, ptr, num) arena_free(arena, ptr, sizeof(*ptr) * (num))
 

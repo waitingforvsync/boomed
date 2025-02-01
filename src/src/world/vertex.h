@@ -1,9 +1,8 @@
 #ifndef WORLD_VERTEX_H_
 #define WORLD_VERTEX_H_
 
-#include "base/array.h"
-#include "world/element_id.h"
 #include "math/vec2i.h"
+#include "world/element_id.h"
 
 
 typedef struct vertex_t vertex_t;
@@ -12,7 +11,7 @@ typedef struct vertex_t vertex_t;
 // Vertices have a 2D integer position and maintain an array of the edge IDs which connect to them.
 struct vertex_t {
     vec2i_t position;
-    array_t(element_id_t, edge_ids);
+    element_ids_t edge_ids;
 };
 
 // Define vertex_t array type

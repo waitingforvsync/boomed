@@ -9,12 +9,12 @@ void boomed_init(boomed_t *boomed) {
 
     world_init(&boomed->world);
 
-    array_init_reserve(boomed->ops, &boomed->ops_arena, 16384);
+    boomed->ops = ops_make(&boomed->ops_arena, 16384);
 }
 
 
 void boomed_deinit(boomed_t *boomed) {
-    array_reset(boomed->ops);
+    ops_reset(&boomed->ops);
     arena_deinit(&boomed->ops_arena);
     arena_deinit(&boomed->scratch_arena);
     arena_deinit(&boomed->preview_ids_arena);

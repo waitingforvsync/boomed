@@ -13,7 +13,7 @@ struct boomed_t {
     arena_t scratch_arena;
     arena_t ops_arena;
     world_t world;
-    array_t(op_t, ops);
+    ops_t ops;
 };
 
 

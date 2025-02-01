@@ -1,7 +1,6 @@
 #ifndef WORLD_WORLD_H_
 #define WORLD_WORLD_H_
 
-#include "base/array.h"
 #include "world/element_id.h"
 #include "world/vertex.h"
 #include "world/edge.h"

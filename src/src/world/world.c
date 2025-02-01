@@ -36,24 +36,23 @@ element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *ids_are
 
 bool world_remove_last_vertex(world_t *world) {
     assert(world);
-    assert(array_is_empty(vertices_get_last(&world->vertices).edge_ids));
+    assert(element_ids_is_empty(&vertices_get_last_ptr(&world->vertices)->edge_ids));
     vertices_pop(&world->vertices);
     return true;
 }
 
 
-static void world_replace_ids(element_id_t *ids, uint32_t ids_num, element_id_t from, element_id_t to) {
-    assert(ids);
-    for (uint32_t i = 0; i < ids_num; ++i) {
-        if (ids[i] == from) {
-            ids[i] = to;
+static void world_replace_ids(element_ids_slice_t ids, element_id_t from, element_id_t to) {
+    for (uint32_t i = 0; i < ids.num; ++i) {
+        if (element_ids_slice_get(ids, i) == from) {
+            element_ids_slice_set(ids, i, to);
         }
     }
 }
 
 bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t new_index) {
     assert(world);
-    if (!array_is_empty(vertices_get(&world->vertices, new_index).edge_ids)) {
+    if (!element_ids_is_empty(&vertices_get_ptr(&world->vertices, new_index)->edge_ids)) {
         // It's an error if we use a vertex which still has edges connected to it
         return false;
     }
@@ -61,22 +60,22 @@ bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t n
     edges_slice_t edges = world->edges.slice;
 
     for (uint32_t i = 0; i < edges.num; ++i) {
-        world_replace_ids(edges_slice_get(edges, i).vertex_ids, 2, old_index, new_index);
+        edge_t *edge = edges_slice_get_ptr(edges, i);
+        element_ids_slice_t element_ids = element_ids_slice_make(edge->vertex_ids, 2);
+        world_replace_ids(element_ids, old_index, new_index);
     }
 
     for (uint32_t i = 0; i < world->zones.num; ++i) {
         zone_t *zone = zones_get_ptr(&world->zones, i);
         world_replace_ids(
-            zone->perimeter.edge_ids,
-            zone->perimeter.edge_ids_num,
+            zone->perimeter.edge_ids.slice,
             old_index,
             new_index
         );
 
         for (uint32_t j = 0; j < zone->holes.num; ++j) {
             world_replace_ids(
-                zone->holes.data[j].edge_ids,
-                zone->holes.data[j].edge_ids_num,
+                contours_get_ptr(&zone->holes, j)->edge_ids.slice,
                 old_index,
                 new_index
             );
@@ -94,7 +93,6 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
 
     // Maintain a list of all the edges which connect to this vertex
     vertex_t *vertex = vertices_get_ptr(&world->vertices, vertex_id);
-    assert(array_is_valid(vertex->edge_ids));
 
     // This edge must not already be in the connected edges list
     assert(vertex_get_connected_edge_index(vertex, edge_id) == INDEX_NONE);
@@ -106,9 +104,10 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
     // Insert the edge such that the array of edges at the vertex is ordered in a counter clockwise fan.
     // When we arrive at this vertex from an edge, the next edge in the array is the "most clockwise" one,
     // which we can use to build a contour.
+    element_ids_t *edge_ids = &vertex->edge_ids;
     uint32_t insert_index = 0;
-    for (; insert_index < vertex->edge_ids_num; ++insert_index) {
-        const edge_t *compare_edge = edges_view_get_ptr(edges, vertex->edge_ids[insert_index]);
+    for (; insert_index < vertex->edge_ids.num; ++insert_index) {
+        const edge_t *compare_edge = edges_view_get_ptr(edges, element_ids_get(edge_ids, insert_index));
         element_id_t v1 = edge_get_other_vertex(compare_edge, vertex_id);
         assert(v1 != ID_NONE);
         vec2i_t p1 = vertices_get(&world->vertices, v1).position;
@@ -118,7 +117,8 @@ static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, elemen
         }
     }
 
-    array_insert(vertex->edge_ids, ids_arena, insert_index, edge_id);
+    element_ids_insert(edge_ids, ids_arena, insert_index, 1);
+    element_ids_set(edge_ids, insert_index, edge_id);
 }
 
 
@@ -142,8 +142,8 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
     world_add_vertex_edge(world, v0, edge_id, ids_arena);
     world_add_vertex_edge(world, v1, edge_id, ids_arena);
 
-    if (vertices_get(&world->vertices, v0).edge_ids_num > 1 &&
-        vertices_get(&world->vertices, v1).edge_ids_num > 1) {
+    if (vertices_get(&world->vertices, v0).edge_ids.num > 1 &&
+        vertices_get(&world->vertices, v1).edge_ids.num > 1) {
         contour_t c0 = contour_make(world->vertices.view, world->edges.view, edge_id, v0, &scratch);
         contour_t c1 = contour_make(world->vertices.view, world->edges.view, edge_id, v1, &scratch);
 
@@ -200,7 +200,7 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *i
 
     zone->holes = contours_make(ids_arena, 8);
     zone->subzones = subzones_make(ids_arena, 32);
-    array_init_reserve(zone->inner_zone_ids, ids_arena, 32);
+    zone->inner_zone_ids = element_ids_make(ids_arena, 32);
 
     zone->aabb = zone_get_aabb(zone, vertices, edges);
 

@@ -200,4 +200,10 @@ static inline const float *vec2f_as_floats(const vec2f_t *a) {
 }
 
 
+// Define vec2f_t array type
+#define TEMPLATE_NAME vec2fs
+#define TEMPLATE_TYPE vec2f_t
+#include "templates/array.h.template"
+
+
 #endif // ifndef MATH_VEC2F_H_

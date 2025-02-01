@@ -1,15 +1,19 @@
 #ifndef WORLD_SUBZONE_H_
 #define WORLD_SUBZONE_H_
 
-#include "base/array.h"
 #include "world/element_id.h"
 
 typedef struct subzone_t subzone_t;
+typedef struct arena_t arena_t;
 
 // A subzone is just an array of vertex IDs defined in a clockwise order.
 struct subzone_t {
-    array_t(element_id_t, vertex_ids);
+    element_ids_t vertex_ids;
 };
+
+
+subzone_t subzone_make(arena_t *arena);
+
 
 // Define subzone_t array type
 #define TEMPLATE_NAME subzones

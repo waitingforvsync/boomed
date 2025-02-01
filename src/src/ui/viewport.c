@@ -238,16 +238,20 @@ static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *s
     const world_t *world = &viewport->boomed->world;
     vertices_view_t vertices = world->vertices.view;
 
-    uint32_t num_vertices = subzone->vertex_ids_num;
-    vec2f_t *points = arena_new_n(vec2f_t, num_vertices, &scratch);
+    uint32_t num_vertices = subzone->vertex_ids.num;
+    vec2fs_slice_t points = arena_new_slice(vec2f_t, num_vertices, &scratch);
 
     for (uint32_t n = 0; n < num_vertices; ++n) {
-        points[n] = mat23f_vec2f_mul(
-            viewport->world_to_viewport,
-            vec2f_make_from_vec2i(vertices_view_get(vertices, subzone->vertex_ids[n]).position)
+        vec2fs_slice_set(points, n,
+            mat23f_vec2f_mul(
+                viewport->world_to_viewport,
+                vec2f_make_from_vec2i(
+                    vertices_view_get(vertices, element_ids_get(&subzone->vertex_ids, n)).position
+                )
+            )
         );
     }
-    draw_polygon(points, num_vertices, colour);
+    draw_polygon(points.data, num_vertices, colour);
 }
 
 static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {

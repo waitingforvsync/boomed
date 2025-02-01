@@ -1,7 +1,6 @@
 #ifndef WORLD_ZONE_H_
 #define WORLD_ZONE_H_
 
-#include "base/array.h"
 #include "math/aabb2f.h"
 #include "world/element_id.h"
 #include "world/contour.h"
@@ -22,7 +21,7 @@ struct zone_t {
     contour_t perimeter;
     contours_t holes;
     subzones_t subzones;
-    array_t(element_id_t, inner_zone_ids);
+    element_ids_t inner_zone_ids;
     aabb2f_t aabb;
     element_id_t outer_zone_id;
     uint8_t floor_height;

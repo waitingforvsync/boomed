@@ -20,5 +20,7 @@
 #define CONCAT(a, b) CONCAT2_(a, b)
 #define CONCAT2_(a, b) a##b
 
+#define INDEX_NONE (0xFFFFFFFFU)
+
 
 #endif // ifndef DEFINES_H_
