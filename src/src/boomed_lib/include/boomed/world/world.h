@@ -28,8 +28,8 @@ typedef struct vec2f_t vec2f_t;
 
 struct world_t {
     arena_t arena;
-    vertex_array_t vertices;
-    edge_array_t edges;
+    vertices_t vertices;
+    edges_t edges;
     array_t(zone_t, zones);
 };
 

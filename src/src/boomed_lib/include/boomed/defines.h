@@ -1,6 +1,7 @@
 #ifndef BOOMED_DEFINES_H_
 #define BOOMED_DEFINES_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -16,8 +17,8 @@
 #define always_assert(cond) ((void)((cond) || (trap(), 0)))
 #define static_assert(cond, msg) _Static_assert(cond, msg)
 
-#define CONCAT(a, b) CONCAT2(a, b)
-#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2_(a, b)
+#define CONCAT2_(a, b) a##b
 
 
 #endif // ifndef BOOMED_DEFINES_H_

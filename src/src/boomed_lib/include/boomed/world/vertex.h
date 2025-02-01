@@ -16,7 +16,7 @@ struct vertex_t {
 };
 
 // Define vertex_t array type
-#define TEMPLATE_NAME vertex
+#define TEMPLATE_NAME vertices
 #define TEMPLATE_TYPE vertex_t
 #include "boomed/templates/array.h.template"
 

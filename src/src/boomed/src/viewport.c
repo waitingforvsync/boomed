@@ -236,7 +236,7 @@ static void viewport_draw_grid(const viewport_t *viewport) {
 
 static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *subzone, uint32_t colour, arena_t scratch) {
     const world_t *world = &viewport->boomed->world;
-    vertex_view_t vertices = world->vertices.view;
+    vertices_view_t vertices = world->vertices.view;
 
     uint32_t num_vertices = subzone->vertex_ids_num;
     vec2f_t *points = arena_new_n(vec2f_t, num_vertices, &scratch);
@@ -244,7 +244,7 @@ static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *s
     for (uint32_t n = 0; n < num_vertices; ++n) {
         points[n] = mat23f_vec2f_mul(
             viewport->world_to_viewport,
-            vec2f_make_from_vec2i(vertex_view_get(vertices, subzone->vertex_ids[n]).position)
+            vec2f_make_from_vec2i(vertices_view_get(vertices, subzone->vertex_ids[n]).position)
         );
     }
     draw_polygon(points, num_vertices, colour);
@@ -276,8 +276,8 @@ static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
 
 static void viewport_draw_edges(const viewport_t *viewport) {
     const world_t *world = &viewport->boomed->world;
-    vertex_view_t vertices = world->vertices.view;
-    edge_view_t edges = world->edges.view;
+    vertices_view_t vertices = world->vertices.view;
+    edges_view_t edges = world->edges.view;
 
     aabb2f_t viewport_aabb = aabb2f_make_with_margin(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),
@@ -286,10 +286,10 @@ static void viewport_draw_edges(const viewport_t *viewport) {
     );
 
     for (uint32_t i = 0; i < edges.num; ++i) {
-        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edge_view_get_ptr(edges, i), vertices))) {
+        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edges_view_get_ptr(edges, i), vertices))) {
             draw_thick_line(
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertex_view_get(vertices, edge_view_get(edges, i).vertex_ids[0]).position)),
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertex_view_get(vertices, edge_view_get(edges, i).vertex_ids[1]).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edges_view_get(edges, i).vertex_ids[0]).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edges_view_get(edges, i).vertex_ids[1]).position)),
                 VIEWPORT_EDGE_THICKNESS,
                 (i == viewport->highlighted_edge) ? 0xFF0000FF : 0xFF000000
             );
@@ -299,7 +299,7 @@ static void viewport_draw_edges(const viewport_t *viewport) {
 
 static void viewport_draw_vertices(const viewport_t *viewport) {
     const world_t *world = &viewport->boomed->world;
-    vertex_view_t vertices = world->vertices.view;
+    vertices_view_t vertices = world->vertices.view;
 
     aabb2f_t viewport_aabb = aabb2f_make_with_margin(
         mat23f_vec2f_mul(viewport->viewport_to_world, vec2f_make_zero()),

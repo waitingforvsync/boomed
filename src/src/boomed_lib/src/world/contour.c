@@ -5,7 +5,7 @@
 #include "boomed/arena.h"
 
 
-contour_t contour_make(vertex_view_t vertices, edge_view_t edges, element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena) {
+contour_t contour_make(vertices_view_t vertices, edges_view_t edges, element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena) {
     contour_t contour = {0};
     array_reserve(contour.edge_ids, arena, 256);
 
@@ -13,8 +13,8 @@ contour_t contour_make(vertex_view_t vertices, edge_view_t edges, element_id_t e
     array_add(contour.edge_ids, arena, edge_id);
 
     while (!array_is_empty(contour.edge_ids)) {
-        vertex_id = edge_get_other_vertex(edge_view_get_ptr(edges, edge_id), vertex_id);
-        const vertex_t *vertex = vertex_view_get_ptr(vertices, vertex_id);
+        vertex_id = edge_get_other_vertex(edges_view_get_ptr(edges, edge_id), vertex_id);
+        const vertex_t *vertex = vertices_view_get_ptr(vertices, vertex_id);
         edge_id = vertex_get_next_edge(vertex, edge_id);
 
         if (vertex_id == start_vertex_id && edge_id == contour.edge_ids[0]) {
@@ -47,12 +47,12 @@ bool contour_is_valid(const contour_t *contour) {
 }
 
 
-element_id_t contour_get_start_vertex(const contour_t *contour, edge_view_t edges) {
+element_id_t contour_get_start_vertex(const contour_t *contour, edges_view_t edges) {
     assert(contour);
 
     if (contour->edge_ids_num > 2) {
-        const edge_t *start_edge = edge_view_get_ptr(edges, contour->edge_ids[0]);
-        const edge_t *next_edge  = edge_view_get_ptr(edges, contour->edge_ids[1]);
+        const edge_t *start_edge = edges_view_get_ptr(edges, contour->edge_ids[0]);
+        const edge_t *next_edge  = edges_view_get_ptr(edges, contour->edge_ids[1]);
 
         if (start_edge->vertex_ids[0] == next_edge->vertex_ids[0] || start_edge->vertex_ids[0] == next_edge->vertex_ids[1]) {
             return start_edge->vertex_ids[1];
@@ -65,7 +65,7 @@ element_id_t contour_get_start_vertex(const contour_t *contour, edge_view_t edge
 }
 
 
-const element_id_t *contour_get_vertices(const contour_t *contour, edge_view_t edges, arena_t *arena) {
+const element_id_t *contour_get_vertices(const contour_t *contour, edges_view_t edges, arena_t *arena) {
     assert(contour);
     assert(arena);
 
@@ -74,7 +74,7 @@ const element_id_t *contour_get_vertices(const contour_t *contour, edge_view_t e
     for (uint32_t i = 0; i < contour->edge_ids_num; ++i) {
         vertex_ids[i] = vertex_id;
         vertex_id = edge_get_other_vertex(
-            edge_view_get_ptr(edges, contour->edge_ids[i]),
+            edges_view_get_ptr(edges, contour->edge_ids[i]),
             vertex_id
         );
     }
@@ -82,7 +82,7 @@ const element_id_t *contour_get_vertices(const contour_t *contour, edge_view_t e
 }
 
 
-int32_t contour_get_winding(const contour_t *contour, vertex_view_t vertices, edge_view_t edges) {
+int32_t contour_get_winding(const contour_t *contour, vertices_view_t vertices, edges_view_t edges) {
     assert(contour);
 
     if (!contour_is_valid(contour)) {
@@ -94,9 +94,9 @@ int32_t contour_get_winding(const contour_t *contour, vertex_view_t vertices, ed
 
     int32_t winding = 0;
     for (uint32_t i = 0; i < contour->edge_ids_num; ++i) {
-        element_id_t v1_id = edge_get_other_vertex(edge_view_get_ptr(edges, contour->edge_ids[i]), v0_id);
-        vec2i_t p0 = vertex_view_get(vertices, v0_id).position;
-        vec2i_t p1 = vertex_view_get(vertices, v1_id).position;
+        element_id_t v1_id = edge_get_other_vertex(edges_view_get_ptr(edges, contour->edge_ids[i]), v0_id);
+        vec2i_t p0 = vertices_view_get(vertices, v0_id).position;
+        vec2i_t p1 = vertices_view_get(vertices, v1_id).position;
         winding += (p0.x - p1.x) * (p0.y + p1.y);
         v0_id = v1_id;
     }
@@ -104,13 +104,13 @@ int32_t contour_get_winding(const contour_t *contour, vertex_view_t vertices, ed
 }
 
 
-bool contour_is_perimeter(const contour_t *contour, vertex_view_t vertices, edge_view_t edges) {
+bool contour_is_perimeter(const contour_t *contour, vertices_view_t vertices, edges_view_t edges) {
     assert(contour);
     return contour_is_valid(contour) && contour_get_winding(contour, vertices, edges) > 0;
 }
 
 
-bool contour_is_hole(const contour_t *contour, vertex_view_t vertices, edge_view_t edges) {
+bool contour_is_hole(const contour_t *contour, vertices_view_t vertices, edges_view_t edges) {
     assert(contour);
     return contour_is_valid(contour) && contour_get_winding(contour, vertices, edges) < 0;
 }

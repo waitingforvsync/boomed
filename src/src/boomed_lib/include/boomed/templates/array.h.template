@@ -12,24 +12,24 @@
 
 
 #define TYPE_t                   TEMPLATE_TYPE
-#define NAME_array_t             CONCAT(TEMPLATE_NAME, _array_t)
+#define NAME_t                   CONCAT(TEMPLATE_NAME, _t)
 #define NAME_view_t              CONCAT(TEMPLATE_NAME, _view_t)
 #define NAME_slice_t             CONCAT(TEMPLATE_NAME, _slice_t)
-#define NAME_array_make          CONCAT(TEMPLATE_NAME, _array_make)
+#define NAME_make                CONCAT(TEMPLATE_NAME, _make)
 #define NAME_slice_make          CONCAT(TEMPLATE_NAME, _slice_make)
 #define NAME_view_make           CONCAT(TEMPLATE_NAME, _view_make)
-#define NAME_array_reserve       CONCAT(TEMPLATE_NAME, _array_reserve)
-#define NAME_array_resize        CONCAT(TEMPLATE_NAME, _array_resize)
-#define NAME_array_reset         CONCAT(TEMPLATE_NAME, _array_reset)
-#define NAME_array_add           CONCAT(TEMPLATE_NAME, _array_add)
-#define NAME_array_push          CONCAT(TEMPLATE_NAME, _array_push)
-#define NAME_array_pop           CONCAT(TEMPLATE_NAME, _array_pop)
-#define NAME_array_set           CONCAT(TEMPLATE_NAME, _array_set)
+#define NAME_reserve             CONCAT(TEMPLATE_NAME, _reserve)
+#define NAME_resize              CONCAT(TEMPLATE_NAME, _resize)
+#define NAME_reset               CONCAT(TEMPLATE_NAME, _reset)
+#define NAME_add                 CONCAT(TEMPLATE_NAME, _add)
+#define NAME_push                CONCAT(TEMPLATE_NAME, _push)
+#define NAME_pop                 CONCAT(TEMPLATE_NAME, _pop)
+#define NAME_set                 CONCAT(TEMPLATE_NAME, _set)
 #define NAME_slice_set           CONCAT(TEMPLATE_NAME, _slice_set)
-#define NAME_array_get           CONCAT(TEMPLATE_NAME, _array_get)
-#define NAME_array_get_ptr       CONCAT(TEMPLATE_NAME, _array_get_ptr)
-#define NAME_array_get_last      CONCAT(TEMPLATE_NAME, _array_get_last)
-#define NAME_array_get_last_ptr  CONCAT(TEMPLATE_NAME, _array_get_last_ptr)
+#define NAME_get                 CONCAT(TEMPLATE_NAME, _get)
+#define NAME_get_ptr             CONCAT(TEMPLATE_NAME, _get_ptr)
+#define NAME_get_last            CONCAT(TEMPLATE_NAME, _get_last)
+#define NAME_get_last_ptr        CONCAT(TEMPLATE_NAME, _get_last_ptr)
 #define NAME_slice_get           CONCAT(TEMPLATE_NAME, _slice_get)
 #define NAME_slice_get_ptr       CONCAT(TEMPLATE_NAME, _slice_get_ptr)
 #define NAME_slice_get_last      CONCAT(TEMPLATE_NAME, _slice_get_last)
@@ -38,6 +38,9 @@
 #define NAME_view_get_ptr        CONCAT(TEMPLATE_NAME, _view_get_ptr)
 #define NAME_view_get_last       CONCAT(TEMPLATE_NAME, _view_get_last)
 #define NAME_view_get_last_ptr   CONCAT(TEMPLATE_NAME, _view_get_last_ptr)
+#define NAME_is_empty            CONCAT(TEMPLATE_NAME, _is_empty)
+#define NAME_slice_is_empty      CONCAT(TEMPLATE_NAME, _slice_is_empty)
+#define NAME_view_is_empty       CONCAT(TEMPLATE_NAME, _view_is_empty)
 
 
 typedef struct NAME_view_t {
@@ -55,7 +58,7 @@ typedef struct NAME_slice_t {
     };
 } NAME_slice_t;
 
-typedef struct NAME_array_t {
+typedef struct NAME_t {
     union {
         struct {
             TYPE_t *data;
@@ -65,11 +68,12 @@ typedef struct NAME_array_t {
         NAME_slice_t slice;
     };
     uint32_t capacity;
-} NAME_array_t;
+} NAME_t;
 
 
-static inline NAME_array_t NAME_array_make(arena_t *arena, uint32_t initial_capacity) {
-    return (NAME_array_t) {
+static inline NAME_t NAME_make(arena_t *arena, uint32_t initial_capacity) {
+    assert(arena);
+    return (NAME_t) {
         .data = arena_alloc(arena, initial_capacity * sizeof(TYPE_t)),
         .num = 0,
         .capacity = initial_capacity
@@ -90,44 +94,49 @@ static inline NAME_view_t NAME_view_make(const TYPE_t *data, uint32_t num) {
     };
 }
 
-static inline void NAME_array_reserve(NAME_array_t *array, arena_t *arena, uint32_t capacity) {
+static inline void NAME_reserve(NAME_t *array, arena_t *arena, uint32_t capacity) {
+    assert(arena);
     if (capacity > array->capacity) {
         array->data = arena_realloc(arena, array->data, array->capacity * sizeof(TYPE_t), capacity * sizeof(TYPE_t));
         array->capacity = capacity;
     }
 }
 
-static inline void NAME_array_resize(NAME_array_t *array, arena_t *arena, uint32_t size) {
-    if (size > array->capacity) {
-        NAME_array_reserve(array, arena, size);
+static inline void NAME_resize(NAME_t *array, arena_t *arena, uint32_t size) {
+    assert(arena || size <= array->capacity);
+    if (arena && size > array->capacity) {
+        NAME_reserve(array, arena, size);
     }
     array->num = size;
 }
 
-static inline void NAME_array_reset(NAME_array_t *array) {
+static inline void NAME_reset(NAME_t *array) {
     array->num = 0;
 }
 
-static inline uint32_t NAME_array_add(NAME_array_t *array, arena_t *arena, TYPE_t value) {
-    if (array->num == array->capacity) {
-        NAME_array_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
+static inline uint32_t NAME_add(NAME_t *array, arena_t *arena, TYPE_t value) {
+    always_assert(arena || array->num < array->capacity);
+    if (arena && array->num == array->capacity) {
+        NAME_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
     }
     array->data[array->num] = value;
     return array->num++;
 }
 
-static inline uint32_t NAME_array_push(NAME_array_t *array, arena_t *arena) {
-    if (array->num == array->capacity) {
-        NAME_array_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
+static inline uint32_t NAME_push(NAME_t *array, arena_t *arena) {
+    always_assert(arena || array->num < array->capacity);
+    if (arena && array->num == array->capacity) {
+        NAME_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
     }
     return array->num++;
 }
 
-static inline uint32_t NAME_array_pop(NAME_array_t *array) {
+static inline uint32_t NAME_pop(NAME_t *array) {
+    always_assert(array->num > 0);
     return array->num--;
 }
 
-static inline void NAME_array_set(const NAME_array_t *array, uint32_t index, TYPE_t value) {
+static inline void NAME_set(NAME_t *array, uint32_t index, TYPE_t value) {
     always_assert(index < array->num);
     array->data[index] = value;
 }
@@ -137,22 +146,22 @@ static inline void NAME_slice_set(NAME_slice_t slice, uint32_t index, TYPE_t val
     slice.data[index] = value;
 }
 
-static inline TYPE_t NAME_array_get(const NAME_array_t *array, uint32_t index) {
+static inline TYPE_t NAME_get(const NAME_t *array, uint32_t index) {
     always_assert(index < array->num);
     return array->data[index];
 }
 
-static inline TYPE_t *NAME_array_get_ptr(const NAME_array_t *array, uint32_t index) {
+static inline TYPE_t *NAME_get_ptr(const NAME_t *array, uint32_t index) {
     always_assert(index < array->num);
     return array->data + index;
 }
 
-static inline TYPE_t NAME_array_get_last(const NAME_array_t *array) {
+static inline TYPE_t NAME_get_last(const NAME_t *array) {
     always_assert(array->num > 0);
     return array->data[array->num - 1];
 }
 
-static inline TYPE_t *NAME_array_get_last_ptr(const NAME_array_t *array) {
+static inline TYPE_t *NAME_get_last_ptr(const NAME_t *array) {
     always_assert(array->num > 0);
     return array->data + array->num - 1;
 }
@@ -197,26 +206,38 @@ static inline const TYPE_t *NAME_view_get_last_ptr(NAME_view_t view) {
     return view.data + view.num - 1;
 }
 
+static inline bool NAME_is_empty(const NAME_t *array) {
+    return !array->num;
+}
+
+static inline bool NAME_slice_is_empty(NAME_slice_t slice) {
+    return !slice.num;
+}
+
+static inline bool NAME_view_is_empty(NAME_view_t view) {
+    return !view.num;
+}
+
 
 #undef TYPE_t
-#undef NAME_array_t
+#undef NAME_t
 #undef NAME_view_t
 #undef NAME_slice_t
-#undef NAME_array_make
+#undef NAME_make
 #undef NAME_slice_make
 #undef NAME_view_make
-#undef NAME_array_reserve
-#undef NAME_array_resize
-#undef NAME_array_reset
-#undef NAME_array_add
-#undef NAME_array_push
-#undef NAME_array_pop
-#undef NAME_array_set
+#undef NAME_reserve
+#undef NAME_resize
+#undef NAME_reset
+#undef NAME_add
+#undef NAME_push
+#undef NAME_pop
+#undef NAME_set
 #undef NAME_slice_set
-#undef NAME_array_get
-#undef NAME_array_get_ptr
-#undef NAME_array_get_last
-#undef NAME_array_get_last_ptr
+#undef NAME_get
+#undef NAME_get_ptr
+#undef NAME_get_last
+#undef NAME_get_last_ptr
 #undef NAME_slice_get
 #undef NAME_slice_get_ptr
 #undef NAME_slice_get_last
@@ -225,6 +246,9 @@ static inline const TYPE_t *NAME_view_get_last_ptr(NAME_view_t view) {
 #undef NAME_view_get_ptr
 #undef NAME_view_get_last
 #undef NAME_view_get_last_ptr
+#undef NAME_is_empty
+#undef NAME_slice_is_empty
+#undef NAME_view_is_empty
 
 #undef TEMPLATE_NAME
 #undef TEMPLATE_TYPE

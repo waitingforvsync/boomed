@@ -32,9 +32,9 @@ struct zone_t {
 };
 
 
-void zone_build_subzones(zone_t *zone, vertex_view_t vertices, edge_view_t edges, arena_t *arena, arena_t scratch);
+void zone_build_subzones(zone_t *zone, vertices_view_t vertices, edges_view_t edges, arena_t *arena, arena_t scratch);
 
-aabb2f_t zone_get_aabb(const zone_t *zone, vertex_view_t vertices, edge_view_t edges);
+aabb2f_t zone_get_aabb(const zone_t *zone, vertices_view_t vertices, edges_view_t edges);
 
 
 #endif // ifndef BOOMED_WORLD_ZONE_H_

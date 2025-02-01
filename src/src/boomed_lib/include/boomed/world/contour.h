@@ -6,8 +6,8 @@
 #include "boomed/world/element_id.h"
 
 typedef struct contour_t contour_t;
-typedef struct vertex_view_t vertex_view_t;
-typedef struct edge_view_t edge_view_t;
+typedef struct vertices_view_t vertices_view_t;
+typedef struct edges_view_t edges_view_t;
 typedef struct arena_t arena_t;
 
 
@@ -19,15 +19,15 @@ struct contour_t {
 };
 
 
-contour_t contour_make(vertex_view_t vertices, edge_view_t edges, element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena);
+contour_t contour_make(vertices_view_t vertices, edges_view_t edges, element_id_t edge_id, element_id_t start_vertex_id, arena_t *arena);
 contour_t contour_make_copy(const contour_t *contour_to_copy, arena_t *arena);
 
 bool contour_is_valid(const contour_t *contour);
-element_id_t contour_get_start_vertex(const contour_t *contour, edge_view_t edges);
-const element_id_t *contour_get_vertices(const contour_t *contour, edge_view_t edges, arena_t *arena);
-int32_t contour_get_winding(const contour_t *contour, vertex_view_t vertices, edge_view_t edges);
-bool contour_is_perimeter(const contour_t *contour, vertex_view_t vertices, edge_view_t edges);
-bool contour_is_hole(const contour_t *contour, vertex_view_t vertices, edge_view_t edges);
+element_id_t contour_get_start_vertex(const contour_t *contour, edges_view_t edges);
+const element_id_t *contour_get_vertices(const contour_t *contour, edges_view_t edges, arena_t *arena);
+int32_t contour_get_winding(const contour_t *contour, vertices_view_t vertices, edges_view_t edges);
+bool contour_is_perimeter(const contour_t *contour, vertices_view_t vertices, edges_view_t edges);
+bool contour_is_hole(const contour_t *contour, vertices_view_t vertices, edges_view_t edges);
 
 
 #endif // ifndef BOOMED_WORLD_CONTOUR_H_

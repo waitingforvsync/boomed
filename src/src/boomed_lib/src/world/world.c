@@ -8,16 +8,16 @@
 void world_init(world_t *world) {
     assert(world);
     world->arena = make_arena();
-    world->vertices = vertex_array_make(&world->arena, 8192);
-    world->edges = edge_array_make(&world->arena, 8192);
+    world->vertices = vertices_make(&world->arena, 8192);
+    world->edges = edges_make(&world->arena, 8192);
     array_init_reserve(world->zones, &world->arena, 1024);
 }
 
 
 void world_reset(world_t *world) {
     assert(world);
-    vertex_array_reset(&world->vertices);
-    edge_array_reset(&world->edges);
+    vertices_reset(&world->vertices);
+    edges_reset(&world->edges);
     array_reset(world->zones);
     arena_reset(&world->arena);
 }
@@ -25,7 +25,7 @@ void world_reset(world_t *world) {
 
 element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *ids_arena) {
     assert(world);
-    element_id_t vertex_id = (element_id_t)vertex_array_add(
+    element_id_t vertex_id = (element_id_t)vertices_add(
         &world->vertices,
         &world->arena,
         vertex_make(position, ids_arena)
@@ -36,8 +36,8 @@ element_id_t world_add_vertex(world_t *world, vec2i_t position, arena_t *ids_are
 
 bool world_remove_last_vertex(world_t *world) {
     assert(world);
-    assert(array_is_empty(vertex_array_get_last(&world->vertices).edge_ids));
-    vertex_array_pop(&world->vertices);
+    assert(array_is_empty(vertices_get_last(&world->vertices).edge_ids));
+    vertices_pop(&world->vertices);
     return true;
 }
 
@@ -53,15 +53,15 @@ static void world_replace_ids(element_id_t *ids, uint32_t ids_num, element_id_t 
 
 bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t new_index) {
     assert(world);
-    if (!array_is_empty(vertex_array_get(&world->vertices, new_index).edge_ids)) {
+    if (!array_is_empty(vertices_get(&world->vertices, new_index).edge_ids)) {
         // It's an error if we use a vertex which still has edges connected to it
         return false;
     }
 
-    edge_slice_t edges = world->edges.slice;
+    edges_slice_t edges = world->edges.slice;
 
     for (uint32_t i = 0; i < edges.num; ++i) {
-        world_replace_ids(edge_slice_get(edges, i).vertex_ids, 2, old_index, new_index);
+        world_replace_ids(edges_slice_get(edges, i).vertex_ids, 2, old_index, new_index);
     }
 
     for (uint32_t i = 0; i < world->zones_num; ++i) {
@@ -83,35 +83,35 @@ bool world_reindex_vertex(world_t *world, element_id_t old_index, element_id_t n
         }
     }
 
-    vertex_array_set(&world->vertices, new_index, vertex_array_get(&world->vertices, old_index));
+    vertices_set(&world->vertices, new_index, vertices_get(&world->vertices, old_index));
     return true;
 }
 
 
 static void world_add_vertex_edge(world_t *world, element_id_t vertex_id, element_id_t edge_id, arena_t *ids_arena) {
     assert(world);
-    edge_view_t edges = world->edges.view;
+    edges_view_t edges = world->edges.view;
 
     // Maintain a list of all the edges which connect to this vertex
-    vertex_t *vertex = vertex_array_get_ptr(&world->vertices, vertex_id);
+    vertex_t *vertex = vertices_get_ptr(&world->vertices, vertex_id);
     assert(array_is_valid(vertex->edge_ids));
 
     // This edge must not already be in the connected edges list
     assert(vertex_get_connected_edge_index(vertex, edge_id) == INDEX_NONE);
 
-    element_id_t v0 = edge_get_other_vertex(edge_view_get_ptr(edges, edge_id), vertex_id);
+    element_id_t v0 = edge_get_other_vertex(edges_view_get_ptr(edges, edge_id), vertex_id);
     assert(v0 != ID_NONE);
-    vec2i_t p0 = vertex_array_get(&world->vertices, v0).position;
+    vec2i_t p0 = vertices_get(&world->vertices, v0).position;
 
     // Insert the edge such that the array of edges at the vertex is ordered in a counter clockwise fan.
     // When we arrive at this vertex from an edge, the next edge in the array is the "most clockwise" one,
     // which we can use to build a contour.
     uint32_t insert_index = 0;
     for (; insert_index < vertex->edge_ids_num; ++insert_index) {
-        const edge_t *compare_edge = edge_view_get_ptr(edges, vertex->edge_ids[insert_index]);
+        const edge_t *compare_edge = edges_view_get_ptr(edges, vertex->edge_ids[insert_index]);
         element_id_t v1 = edge_get_other_vertex(compare_edge, vertex_id);
         assert(v1 != ID_NONE);
-        vec2i_t p1 = vertex_array_get(&world->vertices, v1).position;
+        vec2i_t p1 = vertices_get(&world->vertices, v1).position;
 
         if (vec2i_wedge(vec2i_sub(p0, vertex->position), vec2i_sub(p1, vertex->position)) < 0) {
             break;
@@ -128,7 +128,7 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
     assert(v1 != ID_NONE);
     assert(v0 != v1);
 
-    element_id_t edge_id = (element_id_t)edge_array_add(
+    element_id_t edge_id = (element_id_t)edges_add(
         &world->edges,
         &world->arena,
         (edge_t) {
@@ -142,8 +142,8 @@ element_id_t world_add_edge(world_t *world, element_id_t v0, element_id_t v1, ui
     world_add_vertex_edge(world, v0, edge_id, ids_arena);
     world_add_vertex_edge(world, v1, edge_id, ids_arena);
 
-    if (vertex_array_get(&world->vertices, v0).edge_ids_num > 1 &&
-        vertex_array_get(&world->vertices, v1).edge_ids_num > 1) {
+    if (vertices_get(&world->vertices, v0).edge_ids_num > 1 &&
+        vertices_get(&world->vertices, v1).edge_ids_num > 1) {
         contour_t c0 = contour_make(world->vertices.view, world->edges.view, edge_id, v0, &scratch);
         contour_t c1 = contour_make(world->vertices.view, world->edges.view, edge_id, v1, &scratch);
 
@@ -189,8 +189,8 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *i
     );
 
     zone_t *zone = &world->zones[zone_id];
-    vertex_view_t vertices = world->vertices.view;
-    edge_view_t edges = world->edges.view;
+    vertices_view_t vertices = world->vertices.view;
+    edges_view_t edges = world->edges.view;
 
     array_init_reserve(zone->holes, ids_arena, 8);
     array_init_reserve(zone->subzones, ids_arena, 32);
@@ -209,12 +209,12 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *i
 
 element_id_t world_find_vertex_closest_to_point(const world_t *world, vec2f_t point, float within) {
     assert(world);
-    vertex_view_t vertices = world->vertices.view;
+    vertices_view_t vertices = world->vertices.view;
     float tolerance_sqr = within * within;
     element_id_t result = ID_NONE;
 
     for (uint32_t i = 0; i < vertices.num; ++i) {
-        float distance_sqr = vec2f_lengthsqr(vec2f_sub(point, vec2f_make_from_vec2i(vertex_view_get(vertices, i).position)));
+        float distance_sqr = vec2f_lengthsqr(vec2f_sub(point, vec2f_make_from_vec2i(vertices_view_get(vertices, i).position)));
         if (distance_sqr <= tolerance_sqr) {
             result = (element_id_t)i;
             tolerance_sqr = distance_sqr;
@@ -249,14 +249,15 @@ static float edge_point_distancesqr(vec2f_t start, vec2f_t end, vec2f_t point) {
 
 element_id_t world_find_edge_closest_to_point(const world_t *world, vec2f_t point, float within) {
     assert(world);
-    vertex_view_t vertices = world->vertices.view;
-    edge_view_t edges = world->edges.view;
+    vertices_view_t vertices = world->vertices.view;
+    edges_view_t edges = world->edges.view;
     float tolerance_sqr = within * within;
     element_id_t result = ID_NONE;
 
     for (uint32_t i = 0; i < edges.num; ++i) {
-        vec2f_t p0 = vec2f_make_from_vec2i(vertex_view_get(vertices, edge_view_get(edges, i).vertex_ids[0]).position);
-        vec2f_t p1 = vec2f_make_from_vec2i(vertex_view_get(vertices, edge_view_get(edges, i).vertex_ids[1]).position);
+        const edge_t *edge = edges_view_get_ptr(edges, i);
+        vec2f_t p0 = vec2f_make_from_vec2i(vertices_view_get(vertices, edge->vertex_ids[0]).position);
+        vec2f_t p1 = vec2f_make_from_vec2i(vertices_view_get(vertices, edge->vertex_ids[1]).position);
         aabb2f_t edge_aabb = aabb2f_make_with_margin(p0, p1, within);
         if (aabb2f_contains_point(edge_aabb, point)) {
             float distance_sqr = edge_point_distancesqr(p0, p1, point);
