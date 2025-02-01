@@ -1,0 +1,11 @@
+target_sources("boomed"
+    PRIVATE
+    "arena.c"
+    "arena.h"
+    "array.h"
+    "bitset.c"
+    "bitset.h"
+    "defines.h"
+    "str.c"
+    "str.h"
+)

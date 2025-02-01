@@ -1,0 +1,10 @@
+target_sources("boomed"
+    PRIVATE
+    "aabb2f.h"
+    "mat22f.h"
+    "mat23f.h"
+    "math.h"
+    "rational.h"
+    "vec2f.h"
+    "vec2i.h"
+)
