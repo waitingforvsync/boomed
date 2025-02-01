@@ -1,5 +1,0 @@
-add_executable("boomed" WIN32)
-#set_target_properties("boomed" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-target_link_libraries("boomed" PRIVATE "boomed_lib")
-target_link_libraries("boomed" PRIVATE "SDL3-static")
-add_subdirectory("src")
