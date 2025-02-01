@@ -1,10 +1,12 @@
+add_executable("boomed" WIN32)
+
 if(MSVC)
-	add_compile_options(/W4 /WX)
+	target_compile_options("boomed" PRIVATE /W4 /WX /wd4100 /wd4820 /wd4189)
 else()
-	add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
+	target_compile_options("boomed" PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
 endif()
 
-add_executable("boomed" WIN32)
+
 #set_target_properties("boomed" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 target_include_directories("boomed" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -190,8 +190,8 @@ static const uint8_t *get_triangle_fan_indices(void) {
 	if (!initialized) {
 		for (uint32_t i = 0, n = 0; i < MAX_TRIANGLE_FAN_TRIANGLES; ++i, n += 3) {
 			indices[n + 0] = 0;
-			indices[n + 1] = i + 1;
-			indices[n + 2] = i + 2;			
+			indices[n + 1] = (uint8_t)(i + 1);
+			indices[n + 2] = (uint8_t)(i + 2);			
 		}
 		initialized = true;
 	}

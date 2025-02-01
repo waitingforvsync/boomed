@@ -48,7 +48,7 @@ void bitset_for_each(const bitset_t *bitset, void (*fn)(void *, uint32_t), void 
     for (uint32_t i = 0, max_i = (bitset->num + 63) / 64; i < max_i; ++i) {
         uint64_t b = bitset->bits[i];
         while (b) {
-            uint64_t t = b & -b;
+            uint64_t t = b & (~b + 1ULL);
             fn(ctx, i * 64 + 63 - clz_uint64(t));
             b ^= t;
         }

@@ -290,10 +290,13 @@ static void viewport_draw_edges(const viewport_t *viewport) {
     );
 
     for (uint32_t i = 0; i < edges.num; ++i) {
-        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edges_view_get_ptr(edges, i), vertices))) {
+        const edge_t *edge = edges_view_get_ptr(edges, i);
+        if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edge, vertices))) {
+            element_id_t edge_vertex_id0 = edge->vertex_ids[0];
+            element_id_t edge_vertex_id1 = edge->vertex_ids[1];
             draw_thick_line(
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edges_view_get(edges, i).vertex_ids[0]).position)),
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edges_view_get(edges, i).vertex_ids[1]).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edge_vertex_id0).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edge_vertex_id1).position)),
                 VIEWPORT_EDGE_THICKNESS,
                 (i == viewport->highlighted_edge) ? 0xFF0000FF : 0xFF000000
             );

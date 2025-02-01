@@ -84,9 +84,9 @@ static inline uint32_t clz_uint32(uint32_t a) {
 static inline uint32_t clz_uint64(uint64_t a) {
     assert(a != 0);
 #ifdef _MSC_VER
-    return __lzcnt64(a);
+    return (uint32_t)__lzcnt64(a);
 #else
-    return __builtin_clzll(a);
+    return (uint32_t)__builtin_clzll(a);
 #endif
 }
 
