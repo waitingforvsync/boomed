@@ -4,46 +4,46 @@
 #include "world/world.h"
 
 
-static void op_vertex_add_exec(op_t *op, boomed_t *boomed) {
-    world_add_vertex(&boomed->world, op->vertex_add.position, &boomed->ids_arena);
+static bool op_vertex_add_exec(op_t *op, boomed_t *boomed, arena_t *arena) {
+    element_id_t vertex_id = world_add_vertex(&boomed->world, op->vertex_add.position, arena);
+    return (vertex_id != ID_NONE);
 }
 
-static void op_vertex_add_undo(op_t *op, boomed_t *boomed) {
-    world_remove_last_vertex(&boomed->world);
-}
-
-
-static void op_vertex_move_exec(op_t *op, boomed_t *boomed) {
-    (void)op;
-    (void)boomed;
-}
-
-static void op_vertex_move_undo(op_t *op, boomed_t *boomed) {
-    (void)op;
-    (void)boomed;
+static bool op_vertex_add_undo(op_t *op, boomed_t *boomed, arena_t *arena) {
+    return world_remove_last_vertex(&boomed->world);;
 }
 
 
-static void op_edge_add_exec(op_t *op, boomed_t *boomed) {
-    world_add_edge(
+static bool op_vertex_move_exec(op_t *op, boomed_t *boomed, arena_t *arena) {
+    return true;
+}
+
+static bool op_vertex_move_undo(op_t *op, boomed_t *boomed, arena_t *arena) {
+    return true;
+}
+
+
+static bool op_edge_add_exec(op_t *op, boomed_t *boomed, arena_t *arena) {
+    element_id_t edge_id = world_add_edge(
         &boomed->world,
         op->edge_add.vertices[0],
         op->edge_add.vertices[1],
         op->edge_add.upper_colour,
         op->edge_add.lower_colour,
-        &boomed->ids_arena,
+        arena,
         boomed->scratch_arena
     );
+    return (edge_id != ID_NONE);
 }
 
-static void op_edge_add_undo(op_t *op, boomed_t *boomed) {
-    world_remove_last_edge(&boomed->world);
+static bool op_edge_add_undo(op_t *op, boomed_t *boomed, arena_t *arena) {
+    return world_remove_last_edge(&boomed->world);
 }
 
 
-struct {
-    void (*exec_fn)(op_t *, boomed_t *);
-    void (*undo_fn)(op_t *, boomed_t *);
+static struct {
+    bool (*exec_fn)(op_t *, boomed_t *, arena_t *);
+    bool (*undo_fn)(op_t *, boomed_t *, arena_t *);
 }
 op_fns[] = {
     [op_type_vertex_add]    = {op_vertex_add_exec,    op_vertex_add_undo},
@@ -52,27 +52,18 @@ op_fns[] = {
 };
 
 
-uint32_t exec_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index) {
-    assert(ops[index].type == op_type_sentinel);
-    if (index != ops_num - 1) {
-        for (++index; ops[index].type != op_type_sentinel; ++index) {
-            if (op_fns[ops[index].type].exec_fn) {
-                op_fns[ops[index].type].exec_fn(ops + index, boomed);
-            }
-        }
+bool op_exec(op_t *op, boomed_t *boomed, arena_t *arena) {
+    if (op_fns[op->type].exec_fn) {
+        return op_fns[op->type].exec_fn(op, boomed, arena);
     }
-    return index;
+    return true;
 }
 
 
-uint32_t undo_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index) {
-    assert(ops[index].type == op_type_sentinel);
-    if (index != 0) {
-        for (--index; ops[index].type != op_type_sentinel; --index) {
-            if (op_fns[ops[index].type].undo_fn) {
-                op_fns[ops[index].type].undo_fn(ops + index, boomed);
-            }
-        }
+bool op_undo(op_t *op, boomed_t *boomed, arena_t *arena) {
+    if (op_fns[op->type].undo_fn) {
+        return op_fns[op->type].undo_fn(op, boomed, arena);
     }
-    return index;
+    return true;
 }
+

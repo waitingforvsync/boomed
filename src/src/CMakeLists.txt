@@ -17,7 +17,3 @@ add_subdirectory("platform_sdl3")
 add_subdirectory("templates")
 add_subdirectory("ui")
 add_subdirectory("world")
-
-
-#add_subdirectory("boomed")
-#add_subdirectory("boomed_lib")

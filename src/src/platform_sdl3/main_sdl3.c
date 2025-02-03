@@ -1,6 +1,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <stdio.h>
 #include "platform_sdl3/main_sdl3.h"
 #include "ui/viewport.h"
 #include "app/boomed.h"
@@ -34,6 +35,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 	(void)argc;
 	(void)argv;
 	
+	SDL_Log("BoomEd: initialising...");
+
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL", SDL_GetError(), NULL);
 		return SDL_APP_FAILURE;

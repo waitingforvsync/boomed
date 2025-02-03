@@ -1,7 +1,7 @@
 #ifndef BOOMED_H_
 #define BOOMED_H_
 
-#include "app/ops.h"
+#include "app/op_list.h"
 #include "base/arena.h"
 #include "world/world.h"
 
@@ -9,11 +9,12 @@ typedef struct boomed_t boomed_t;
 
 struct boomed_t {
     arena_t ids_arena;
-    arena_t preview_ids_arena;
+    arena_t preview_arena;
     arena_t scratch_arena;
     arena_t ops_arena;
     world_t world;
-    ops_t ops;
+    op_list_t op_list;
+    op_list_t preview_op_list;
 };
 
 

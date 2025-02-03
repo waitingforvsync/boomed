@@ -1,6 +1,7 @@
 #ifndef OPS_H_
 #define OPS_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "math/vec2i.h"
 
@@ -87,8 +88,8 @@ struct op_t {
 #include "templates/array.h.template"
 
 
+bool op_exec(op_t *op, boomed_t *boomed, arena_t *arena);
+bool op_undo(op_t *op, boomed_t *boomed, arena_t *arena);
 
-uint32_t exec_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
-uint32_t undo_compound_op(boomed_t *boomed, op_t *ops, uint32_t ops_num, uint32_t index);
 
 #endif // ifndef OPS_H_

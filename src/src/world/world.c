@@ -186,6 +186,9 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *i
         &world->arena,
         (zone_t) {
             .perimeter = contour_make_copy(contour, ids_arena),
+            .holes = contours_make(ids_arena, 8),
+            .subzones = subzones_make(ids_arena, 32),
+            .inner_zone_ids = element_ids_make(ids_arena, 32),
             .outer_zone_id = ID_NONE,
             .floor_height = 192,
             .ceiling_height = 128,
@@ -197,10 +200,6 @@ element_id_t world_add_zone(world_t *world, const contour_t *contour, arena_t *i
     zone_t *zone = zones_get_ptr(&world->zones, zone_id);
     vertices_view_t vertices = world->vertices.view;
     edges_view_t edges = world->edges.view;
-
-    zone->holes = contours_make(ids_arena, 8);
-    zone->subzones = subzones_make(ids_arena, 32);
-    zone->inner_zone_ids = element_ids_make(ids_arena, 32);
 
     zone->aabb = zone_get_aabb(zone, vertices, edges);
 

@@ -2,6 +2,8 @@ target_sources("boomed"
     PRIVATE
     "boomed.c"
     "boomed.h"
-    "ops.h"
     "ops.c"
+    "ops.h"
+    "op_list.c"
+    "op_list.h"
 )
