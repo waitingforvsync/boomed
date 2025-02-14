@@ -26,6 +26,7 @@ struct edge_t {
 // Define edge_t array type
 #define TEMPLATE_NAME edges
 #define TEMPLATE_TYPE edge_t
+#define TEMPLATE_BY_REF
 #include "templates/array.h.template"
 
 

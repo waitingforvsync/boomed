@@ -31,17 +31,11 @@
 #define NAME_set                 CONCAT(TEMPLATE_NAME, _set)
 #define NAME_slice_set           CONCAT(TEMPLATE_NAME, _slice_set)
 #define NAME_get                 CONCAT(TEMPLATE_NAME, _get)
-#define NAME_get_ptr             CONCAT(TEMPLATE_NAME, _get_ptr)
 #define NAME_get_last            CONCAT(TEMPLATE_NAME, _get_last)
-#define NAME_get_last_ptr        CONCAT(TEMPLATE_NAME, _get_last_ptr)
 #define NAME_slice_get           CONCAT(TEMPLATE_NAME, _slice_get)
-#define NAME_slice_get_ptr       CONCAT(TEMPLATE_NAME, _slice_get_ptr)
 #define NAME_slice_get_last      CONCAT(TEMPLATE_NAME, _slice_get_last)
-#define NAME_slice_get_last_ptr  CONCAT(TEMPLATE_NAME, _slice_get_last_ptr)
 #define NAME_view_get            CONCAT(TEMPLATE_NAME, _view_get)
-#define NAME_view_get_ptr        CONCAT(TEMPLATE_NAME, _view_get_ptr)
 #define NAME_view_get_last       CONCAT(TEMPLATE_NAME, _view_get_last)
-#define NAME_view_get_last_ptr   CONCAT(TEMPLATE_NAME, _view_get_last_ptr)
 #define NAME_is_empty            CONCAT(TEMPLATE_NAME, _is_empty)
 #define NAME_slice_is_empty      CONCAT(TEMPLATE_NAME, _slice_is_empty)
 #define NAME_view_is_empty       CONCAT(TEMPLATE_NAME, _view_is_empty)
@@ -100,6 +94,7 @@ static inline NAME_view_t NAME_view_make(const TYPE_t *data, uint32_t num) {
 
 static inline NAME_t NAME_make_copy(const NAME_view_t src, arena_t *arena, uint32_t min_capacity) {
     assert(arena);
+    assert(src.data);
     uint32_t capacity = (src.num > min_capacity) ? src.num : min_capacity;
     NAME_t array = {
         .data = arena_alloc(arena, capacity * sizeof(TYPE_t)),
@@ -111,6 +106,7 @@ static inline NAME_t NAME_make_copy(const NAME_view_t src, arena_t *arena, uint3
 }
 
 static inline void NAME_reserve(NAME_t *array, arena_t *arena, uint32_t capacity) {
+    assert(array);
     assert(arena);
     if (capacity > array->capacity) {
         array->data = arena_realloc(arena, array->data, array->capacity * sizeof(TYPE_t), capacity * sizeof(TYPE_t));
@@ -119,6 +115,7 @@ static inline void NAME_reserve(NAME_t *array, arena_t *arena, uint32_t capacity
 }
 
 static inline NAME_slice_t NAME_resize(NAME_t *array, arena_t *arena, uint32_t size) {
+    assert(array);
     assert(arena || size <= array->capacity);
     if (arena && size > array->capacity) {
         NAME_reserve(array, arena, size);
@@ -128,10 +125,27 @@ static inline NAME_slice_t NAME_resize(NAME_t *array, arena_t *arena, uint32_t s
 }
 
 static inline void NAME_reset(NAME_t *array) {
+    assert(array);
     array->num = 0;
 }
 
+#ifdef TEMPLATE_BY_REF
+
+static inline uint32_t NAME_add(NAME_t *array, arena_t *arena, const TYPE_t *value) {
+    assert(array);
+    assert(value);
+    always_assert(arena || array->num < array->capacity);
+    if (arena && array->num == array->capacity) {
+        NAME_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
+    }
+    array->data[array->num] = *value;
+    return array->num++;
+}
+
+#else // ifdef TEMPLATE_BY_REF
+
 static inline uint32_t NAME_add(NAME_t *array, arena_t *arena, TYPE_t value) {
+    assert(array);
     always_assert(arena || array->num < array->capacity);
     if (arena && array->num == array->capacity) {
         NAME_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
@@ -140,7 +154,10 @@ static inline uint32_t NAME_add(NAME_t *array, arena_t *arena, TYPE_t value) {
     return array->num++;
 }
 
+#endif // ifndef TEMPLATE_BY_REF
+
 static inline uint32_t NAME_push(NAME_t *array, arena_t *arena) {
+    assert(array);
     always_assert(arena || array->num < array->capacity);
     if (arena && array->num == array->capacity) {
         NAME_reserve(array, arena, (array->capacity < 8) ? 16 : array->capacity * 2);
@@ -149,11 +166,13 @@ static inline uint32_t NAME_push(NAME_t *array, arena_t *arena) {
 }
 
 static inline uint32_t NAME_pop(NAME_t *array) {
+    assert(array);
     always_assert(array->num > 0);
     return array->num--;
 }
 
 static inline void NAME_insert(NAME_t *array, arena_t *arena, uint32_t index, uint32_t n) {
+    assert(array);
     if (index <= array->num) {
         always_assert(arena || array->num + n <= array->capacity);
         if (arena && array->num + n > array->capacity) {
@@ -165,6 +184,7 @@ static inline void NAME_insert(NAME_t *array, arena_t *arena, uint32_t index, ui
 }
 
 static inline void NAME_remove(NAME_t *array, uint32_t index, uint32_t n) {
+    assert(array);
     if (index <= array->num) {
         if (index + n > array->num) {
             n = array->num - index;
@@ -174,75 +194,108 @@ static inline void NAME_remove(NAME_t *array, uint32_t index, uint32_t n) {
     }
 }
 
+#ifdef TEMPLATE_BY_REF
+
+static inline void NAME_set(NAME_t *array, uint32_t index, const TYPE_t *value) {
+    assert(array);
+    assert(value);
+    always_assert(index < array->num);
+    array->data[index] = *value;
+}
+
+static inline void NAME_slice_set(NAME_slice_t slice, uint32_t index, const TYPE_t *value) {
+    assert(slice.data);
+    always_assert(index < slice.num);
+    slice.data[index] = *value;
+}
+
+static inline TYPE_t *NAME_get(const NAME_t *array, uint32_t index) {
+    assert(array);
+    always_assert(index < array->num);
+    return array->data + index;
+}
+
+static inline TYPE_t *NAME_get_last(const NAME_t *array) {
+    assert(array);
+    always_assert(array->num > 0);
+    return array->data + array->num - 1;
+}
+
+static inline TYPE_t *NAME_slice_get(NAME_slice_t slice, uint32_t index) {
+    assert(slice.data);
+    always_assert(index < slice.num);
+    return slice.data + index;
+}
+
+static inline TYPE_t *NAME_slice_get_last(NAME_slice_t slice) {
+    assert(slice.data);
+    always_assert(slice.num > 0);
+    return slice.data + slice.num - 1;
+}
+
+static inline const TYPE_t *NAME_view_get(NAME_view_t view, uint32_t index) {
+    assert(view.data);
+    always_assert(index < view.num);
+    return view.data + index;
+}
+
+static inline const TYPE_t *NAME_view_get_last(NAME_view_t view) {
+    assert(view.data);
+    always_assert(view.num > 0);
+    return view.data + view.num - 1;
+}
+
+#else // ifndef TEMPLATE_BY_REF
+
 static inline void NAME_set(NAME_t *array, uint32_t index, TYPE_t value) {
+    assert(array);
     always_assert(index < array->num);
     array->data[index] = value;
 }
 
 static inline void NAME_slice_set(NAME_slice_t slice, uint32_t index, TYPE_t value) {
+    assert(slice.data);
     always_assert(index < slice.num);
     slice.data[index] = value;
 }
 
 static inline TYPE_t NAME_get(const NAME_t *array, uint32_t index) {
+    assert(array);
     always_assert(index < array->num);
     return array->data[index];
 }
 
-static inline TYPE_t *NAME_get_ptr(const NAME_t *array, uint32_t index) {
-    always_assert(index < array->num);
-    return array->data + index;
-}
-
 static inline TYPE_t NAME_get_last(const NAME_t *array) {
+    assert(array);
     always_assert(array->num > 0);
     return array->data[array->num - 1];
 }
 
-static inline TYPE_t *NAME_get_last_ptr(const NAME_t *array) {
-    always_assert(array->num > 0);
-    return array->data + array->num - 1;
-}
-
 static inline TYPE_t NAME_slice_get(NAME_slice_t slice, uint32_t index) {
+    assert(slice.data);
     always_assert(index < slice.num);
     return slice.data[index];
 }
 
-static inline TYPE_t *NAME_slice_get_ptr(NAME_slice_t slice, uint32_t index) {
-    always_assert(index < slice.num);
-    return slice.data + index;
-}
-
 static inline TYPE_t NAME_slice_get_last(NAME_slice_t slice) {
+    assert(slice.data);
     always_assert(slice.num > 0);
     return slice.data[slice.num - 1];
 }
 
-static inline TYPE_t *NAME_slice_get_last_ptr(NAME_slice_t slice) {
-    always_assert(slice.num > 0);
-    return slice.data + slice.num - 1;
-}
-
 static inline TYPE_t NAME_view_get(NAME_view_t view, uint32_t index) {
+    assert(view.data);
     always_assert(index < view.num);
     return view.data[index];
 }
 
-static inline const TYPE_t *NAME_view_get_ptr(NAME_view_t view, uint32_t index) {
-    always_assert(index < view.num);
-    return view.data + index;
-}
-
 static inline TYPE_t NAME_view_get_last(NAME_view_t view) {
+    assert(view.data);
     always_assert(view.num > 0);
     return view.data[view.num - 1];
 }
 
-static inline const TYPE_t *NAME_view_get_last_ptr(NAME_view_t view) {
-    always_assert(view.num > 0);
-    return view.data + view.num - 1;
-}
+#endif // ifndef TEMPLATE_BY_REF
 
 static inline bool NAME_is_empty(const NAME_t *array) {
     return !array->num;
@@ -276,20 +329,15 @@ static inline bool NAME_view_is_empty(NAME_view_t view) {
 #undef NAME_set
 #undef NAME_slice_set
 #undef NAME_get
-#undef NAME_get_ptr
 #undef NAME_get_last
-#undef NAME_get_last_ptr
 #undef NAME_slice_get
-#undef NAME_slice_get_ptr
 #undef NAME_slice_get_last
-#undef NAME_slice_get_last_ptr
 #undef NAME_view_get
-#undef NAME_view_get_ptr
 #undef NAME_view_get_last
-#undef NAME_view_get_last_ptr
 #undef NAME_is_empty
 #undef NAME_slice_is_empty
 #undef NAME_view_is_empty
 
 #undef TEMPLATE_NAME
 #undef TEMPLATE_TYPE
+#undef TEMPLATE_BY_REF

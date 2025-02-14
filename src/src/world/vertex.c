@@ -2,16 +2,6 @@
 #include "world/vertex.h"
 
 
-vertex_t vertex_make(vec2i_t position, arena_t *ids_arena) {
-    vertex_t vertex = {
-        .position = position,
-        .edge_ids = element_ids_make(ids_arena, 32)
-    };
-
-    return vertex;
-}
-
-
 uint32_t vertex_get_connected_edge_index(const vertex_t *vertex, element_id_t edge_id) {
     assert(vertex);
     assert(edge_id != ID_NONE);

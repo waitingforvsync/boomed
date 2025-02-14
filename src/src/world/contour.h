@@ -20,6 +20,7 @@ struct contour_t {
 // Define contour_t array type
 #define TEMPLATE_NAME contours
 #define TEMPLATE_TYPE contour_t
+#define TEMPLATE_BY_REF
 #include "templates/array.h.template"
 
 

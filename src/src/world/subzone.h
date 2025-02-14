@@ -12,12 +12,10 @@ struct subzone_t {
 };
 
 
-subzone_t subzone_make(arena_t *arena);
-
-
 // Define subzone_t array type
 #define TEMPLATE_NAME subzones
 #define TEMPLATE_TYPE subzone_t
+#define TEMPLATE_BY_REF
 #include "templates/array.h.template"
 
 

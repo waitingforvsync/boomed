@@ -17,10 +17,10 @@ struct vertex_t {
 // Define vertex_t array type
 #define TEMPLATE_NAME vertices
 #define TEMPLATE_TYPE vertex_t
+#define TEMPLATE_BY_REF
 #include "templates/array.h.template"
 
 
-vertex_t vertex_make(vec2i_t position, arena_t *ids_arena);
 
 uint32_t vertex_get_connected_edge_index(const vertex_t *vertex, element_id_t edge_id);
 element_id_t vertex_get_prev_connected_edge(const vertex_t *vertex, element_id_t edge_id);

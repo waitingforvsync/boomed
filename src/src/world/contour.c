@@ -21,8 +21,8 @@ contour_t contour_make(vertices_view_t vertices, edges_view_t edges, element_id_
     // Each vertex remembers its connected edges, and they are stored in an anti-clockwise order.
     // This means that if we are approaching a vertex from edge index n, then edge index n+1 is the "most clockwise" oriented outgoing edge. 
     while (!element_ids_is_empty(&contour.edge_ids)) {
-        vertex_id = edge_get_other_vertex(edges_view_get_ptr(edges, edge_id), vertex_id);
-        const vertex_t *vertex = vertices_view_get_ptr(vertices, vertex_id);
+        vertex_id = edge_get_other_vertex(edges_view_get(edges, edge_id), vertex_id);
+        const vertex_t *vertex = vertices_view_get(vertices, vertex_id);
 
         edge_id = vertex_get_next_connected_edge(vertex, edge_id);
 
@@ -72,8 +72,8 @@ element_id_t contour_get_start_vertex(const contour_t *contour, edges_view_t edg
     // It will be whichever vertex of the first edge ID which corresponds to its "start" vertex if we are travelling
     // through the edge IDs in index order.
     if (contour->edge_ids.num > 2) {
-        const edge_t *start_edge = edges_view_get_ptr(edges, element_ids_get(&contour->edge_ids, 0));
-        const edge_t *next_edge  = edges_view_get_ptr(edges, element_ids_get(&contour->edge_ids, 1));
+        const edge_t *start_edge = edges_view_get(edges, element_ids_get(&contour->edge_ids, 0));
+        const edge_t *next_edge  = edges_view_get(edges, element_ids_get(&contour->edge_ids, 1));
 
         if (start_edge->vertex_ids[0] == next_edge->vertex_ids[0] || start_edge->vertex_ids[0] == next_edge->vertex_ids[1]) {
             return start_edge->vertex_ids[1];
@@ -99,7 +99,7 @@ element_ids_view_t contour_get_vertices(const contour_t *contour, edges_view_t e
     for (uint32_t i = 0; i < edge_ids.num; ++i) {
         element_ids_slice_set(vertex_ids, i, vertex_id);
         vertex_id = edge_get_other_vertex(
-            edges_view_get_ptr(edges, element_ids_view_get(edge_ids, i)),
+            edges_view_get(edges, element_ids_view_get(edge_ids, i)),
             vertex_id
         );
     }
@@ -120,11 +120,11 @@ int32_t contour_get_winding(const contour_t *contour, vertices_view_t vertices, 
     int32_t winding = 0;
     for (uint32_t i = 0; i < contour->edge_ids.num; ++i) {
         element_id_t v1_id = edge_get_other_vertex(
-            edges_view_get_ptr(edges, element_ids_get(&contour->edge_ids, i)),
+            edges_view_get(edges, element_ids_get(&contour->edge_ids, i)),
             v0_id
         );
-        vec2i_t p0 = vertices_view_get(vertices, v0_id).position;
-        vec2i_t p1 = vertices_view_get(vertices, v1_id).position;
+        vec2i_t p0 = vertices_view_get(vertices, v0_id)->position;
+        vec2i_t p1 = vertices_view_get(vertices, v1_id)->position;
         winding += (p0.x - p1.x) * (p0.y + p1.y);
         v0_id = v1_id;
     }

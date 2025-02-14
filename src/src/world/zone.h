@@ -33,6 +33,7 @@ struct zone_t {
 // Define zone_t array type
 #define TEMPLATE_NAME zones
 #define TEMPLATE_TYPE zone_t
+#define TEMPLATE_BY_REF
 #include "templates/array.h.template"
 
 

@@ -21,7 +21,7 @@ op_list_t op_list_make(arena_t *ops_list_arena, arena_t *ops_arena, boomed_t *bo
 void op_list_reset(op_list_t *op_list);
 bool op_list_exec(op_list_t *op_list);
 bool op_list_undo(op_list_t *op_list);
-bool op_list_add(op_list_t *op_list, op_t op);
+bool op_list_add(op_list_t *op_list, const op_t *op);
 
 
 #endif // ifndef OP_LIST_H_

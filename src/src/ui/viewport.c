@@ -73,7 +73,6 @@ typedef struct nearest_elements_t {
 #define EDGE_VIEWPORT_PIXEL_TOLERANCE (6.0f)
 
 static nearest_elements_t viewport_get_nearest_elements(const viewport_t *viewport, vec2f_t world_pos) {
-    // Choose either the nearest vertex or the nearest edge, never both.
     // Vertices have a higher tolerance, as it's generally more useful to want to snap to a vertex than an edge.
     const world_t *world = &viewport->boomed->world;
     element_id_t vertex_id = world_find_vertex_closest_to_point(
@@ -82,14 +81,11 @@ static nearest_elements_t viewport_get_nearest_elements(const viewport_t *viewpo
         VERTEX_VIEWPORT_PIXEL_TOLERANCE / viewport->zoom
     );
 
-    element_id_t edge_id = ID_NONE;
-    if (vertex_id == ID_NONE) {
-        edge_id = world_find_edge_closest_to_point(
-            world,
-            world_pos,
-            EDGE_VIEWPORT_PIXEL_TOLERANCE / viewport->zoom
-        );
-    }
+    element_id_t edge_id = world_find_edge_closest_to_point(
+        world,
+        world_pos,
+        EDGE_VIEWPORT_PIXEL_TOLERANCE / viewport->zoom
+    );
 
     return (nearest_elements_t) {
         vertex_id,
@@ -111,10 +107,32 @@ typedef struct point_info_t {
     nearest_elements_t nearest;
 } point_info_t;
 
-static point_info_t viewport_get_point_info(const viewport_t *viewport, vec2f_t world_pos) {
-    // 
+static point_info_t viewport_get_point_info(const viewport_t *viewport, vec2f_t world_pos) { 
     nearest_elements_t nearest = viewport_get_nearest_elements(viewport, world_pos);
     vec2i_t snapped_point = vec2i_make_snapped(world_pos, viewport->snap);
+    nearest_elements_t nearest_snapped = viewport_get_nearest_elements(viewport, vec2f_make_from_vec2i(snapped_point));
+
+    // Basic UX principle is that if an element is lit up, the user expects to interact with it.
+    // Points have a wider interaction radius, so there is a slight bias towards interacting with edge endpoints.
+
+    // If there is a near edge:
+    //   Snap the position to the grid
+    //   If there is a near vertex at the snapped position:
+    //     If the snapped position is the vertex position:
+    //       Use the vertex
+    //     Otherwise:
+    //       Move the vertex to the snapped position
+    //   Otherwise:
+    //     Split the edge at the snapped position
+
+    // If there is a near vertex:
+    //   Snap the position to the grid
+    //   If the snapped position is the vertex position:
+    //     Use the vertex
+    //   Otherwise:
+    //     Move the vertex to the snapped position
+
+    // Otherwise: create a new vertex
 
     return (point_info_t) {
         snapped_point,
@@ -246,7 +264,7 @@ static void viewport_draw_subzone(const viewport_t *viewport, const subzone_t *s
             mat23f_vec2f_mul(
                 viewport->world_to_viewport,
                 vec2f_make_from_vec2i(
-                    vertices_view_get(vertices, element_ids_get(&subzone->vertex_ids, n)).position
+                    vertices_view_get(vertices, element_ids_get(&subzone->vertex_ids, n))->position
                 )
             )
         );
@@ -269,10 +287,10 @@ static void viewport_draw_zones(const viewport_t *viewport, arena_t scratch) {
     };
 
     for (uint32_t i = 0; i < world->zones.num; ++i) {
-        const zone_t *zone = zones_view_get_ptr(zones, i);
+        const zone_t *zone = zones_view_get(zones, i);
         if (aabb2f_intersects(viewport_aabb, zone->aabb)) {
             for (uint32_t j = 0; j < zone->subzones.num; ++j) {
-                viewport_draw_subzone(viewport, subzones_get_ptr(&zone->subzones, j), zone_colours[i & 0xF], scratch);
+                viewport_draw_subzone(viewport, subzones_get(&zone->subzones, j), zone_colours[i & 0xF], scratch);
             }
         }
     }
@@ -290,13 +308,13 @@ static void viewport_draw_edges(const viewport_t *viewport) {
     );
 
     for (uint32_t i = 0; i < edges.num; ++i) {
-        const edge_t *edge = edges_view_get_ptr(edges, i);
+        const edge_t *edge = edges_view_get(edges, i);
         if (aabb2f_intersects(viewport_aabb, edge_get_aabb(edge, vertices))) {
             element_id_t edge_vertex_id0 = edge->vertex_ids[0];
             element_id_t edge_vertex_id1 = edge->vertex_ids[1];
             draw_thick_line(
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edge_vertex_id0).position)),
-                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edge_vertex_id1).position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edge_vertex_id0)->position)),
+                mat23f_vec2f_mul(viewport->world_to_viewport, vec2f_make_from_vec2i(vertices_view_get(vertices, edge_vertex_id1)->position)),
                 VIEWPORT_EDGE_THICKNESS,
                 (i == viewport->highlighted_edge) ? 0xFF0000FF : 0xFF000000
             );

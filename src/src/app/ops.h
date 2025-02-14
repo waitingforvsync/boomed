@@ -85,6 +85,7 @@ struct op_t {
 // Define op_t array type
 #define TEMPLATE_NAME ops
 #define TEMPLATE_TYPE op_t
+#define TEMPLATE_BY_REF
 #include "templates/array.h.template"
 
 
