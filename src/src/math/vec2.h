@@ -5,9 +5,11 @@
 #include <cstdint>
 #include <type_traits>
 
+template <typename T>
+concept ScalarReal = std::floating_point<T>;
 
 template <typename T>
-concept Scalar = std::integral<T> || std::floating_point<T>;
+concept Scalar = ScalarReal<T> || std::signed_integral<T>;
 
 template <Scalar T>
 struct vec2 {
@@ -17,20 +19,28 @@ struct vec2 {
     using scalar_result = std::conditional_t<std::is_floating_point_v<T>, T, std::int64_t>;
 
     // Constructors
-    vec2() = default;
-    vec2(T x, T y);
-    template <Scalar U> vec2(vec2<U> v);
+    constexpr vec2() = default;
+    constexpr vec2(T x, T y);
+    template <Scalar U> constexpr vec2(vec2<U> v);
+
+    // Constants
+    static constexpr auto zero() -> vec2 { return vec2{0, 0}; }
+    static constexpr auto axisx() -> vec2 { return vec2{1, 0}; }
+    static constexpr auto axisy() -> vec2 { return vec2{0, 1}; }
+
+    // Named constructors
+    static constexpr auto make_sincos(T angle) -> vec2 requires ScalarReal<T>;
+
+    // Member operations
+    constexpr auto lensqr() const -> scalar_result;
+    constexpr auto len() const -> scalar_result;
+    constexpr auto normalised() const -> vec2 requires ScalarReal<T>;
 
     // Binary functions
-    static auto dot(vec2 a, vec2 b) -> scalar_result;
-    static auto cross(vec2 a, vec2 b) -> scalar_result;
-    static auto distancesqr(vec2 a, vec2 b) -> scalar_result;
-    static auto distance(vec2 a, vec2 b) -> scalar_result;
-
-    // Unary functions
-    auto lensqr() const -> scalar_result;
-    auto len() const -> scalar_result;
-    auto normalised() const -> vec2 requires std::is_floating_point_v<T>;
+    static constexpr auto dot(vec2 a, vec2 b) -> scalar_result;
+    static constexpr auto cross(vec2 a, vec2 b) -> scalar_result;
+    static constexpr auto distancesqr(vec2 a, vec2 b) -> scalar_result;
+    static constexpr auto distance(vec2 a, vec2 b) -> scalar_result;
 };
 
 
@@ -38,74 +48,117 @@ using vec2f = vec2<float>;
 using vec2i = vec2<std::int16_t>;
 
 
-template <Scalar T> 
-inline vec2<T>::vec2(T x, T y) : x{x}, y{y} {}
+// Construct a vec2 from two scalars
+template <Scalar T>
+constexpr vec2<T>::vec2(T x, T y) : x{x}, y{y} {}
 
+// Implicitly construct a vec2 from a different type of vec2
 template <Scalar T>
 template <Scalar U>
-inline vec2<T>::vec2(vec2<U> v) : x{static_cast<T>(v.x)}, y{static_cast<T>(v.y)} {}
+constexpr vec2<T>::vec2(vec2<U> v) : x{static_cast<T>(v.x)}, y{static_cast<T>(v.y)} {}
 
+// Unary negation
 template <Scalar T>
-inline auto operator +(vec2<T> a, vec2<T> b) -> vec2<T> {
+constexpr auto operator -(vec2<T> a) -> vec2<T> {
+    return {
+        static_cast<T>(-a.x),
+        static_cast<T>(-a.y)
+    };
+}
+
+// Binary addition
+template <Scalar T>
+constexpr auto operator +(vec2<T> a, vec2<T> b) -> vec2<T> {
     return {
         static_cast<T>(a.x + b.x),
         static_cast<T>(a.y + b.y)
     };
 }
 
+// Binary subtraction
 template <Scalar T>
-inline auto operator -(vec2<T> a, vec2<T> b) -> vec2<T> {
+constexpr auto operator -(vec2<T> a, vec2<T> b) -> vec2<T> {
     return {
         static_cast<T>(a.x - b.x),
         static_cast<T>(a.y - b.y)
     };
 }
 
+// Scale by a scalar
 template <Scalar T>
-inline auto operator *(vec2<T> a, T b) -> vec2<T> {
+constexpr auto operator *(vec2<T> v, T s) -> vec2<T> {
     return {
-        static_cast<T>(a.x * b),
-        static_cast<T>(a.y * b)
+        static_cast<T>(v.x * s),
+        static_cast<T>(v.y * s)
     };
 }
 
+// Compare equal
 template <Scalar T>
-inline auto vec2<T>::dot(vec2 a, vec2 b) -> scalar_result {
+constexpr auto operator ==(vec2<T> a, vec2<T> b) -> bool {
+    return a.x == b.x && a.y == b.y;
+}
+
+// Compare not equal
+template <Scalar T>
+constexpr auto operator !=(vec2<T> a, vec2<T> b) -> bool {
+    return a.x != b.x || a.y != b.y;
+}
+
+// Make a vec2 from the sin, cos of angle
+template <Scalar T>
+constexpr auto vec2<T>::make_sincos(T angle) -> vec2 requires ScalarReal<T> {
+    return {
+        std::sin(angle),
+        std::cos(angle)
+    };
+}
+
+
+// Get the square of the length of the vec2
+template <Scalar T>
+constexpr auto vec2<T>::lensqr() const -> scalar_result {
+    return vec2::dot(*this, *this);
+}
+
+// Get the length of the vec2
+template <Scalar T>
+constexpr auto vec2<T>::len() const -> scalar_result {
+    return static_cast<scalar_result>(std::sqrt(lensqr()));
+}
+
+// Return a normalised vec2
+template <Scalar T>
+constexpr auto vec2<T>::normalised() const -> vec2 requires ScalarReal<T> {
+    return *this * (1 / len());
+}
+
+// Calculate the dot product of a and b
+template <Scalar T>
+constexpr auto vec2<T>::dot(vec2 a, vec2 b) -> scalar_result {
     return
         static_cast<scalar_result>(a.x) * static_cast<scalar_result>(b.x) +
         static_cast<scalar_result>(a.y) * static_cast<scalar_result>(b.y);
 }
 
+// Calculate the cross (wedge) product of a and b
 template <Scalar T>
-inline auto vec2<T>::cross(vec2 a, vec2 b) -> scalar_result {
+constexpr auto vec2<T>::cross(vec2 a, vec2 b) -> scalar_result {
     return
         static_cast<scalar_result>(a.x) * static_cast<scalar_result>(b.y) -
         static_cast<scalar_result>(a.y) * static_cast<scalar_result>(b.x);
 }
 
+// Get the distance squared between a and b
 template <Scalar T>
-inline auto vec2<T>::distancesqr(vec2 a, vec2 b) -> scalar_result {
+constexpr auto vec2<T>::distancesqr(vec2 a, vec2 b) -> scalar_result {
     return (b - a).lensqr();
 }
 
+// Get the distance between a and b
 template <Scalar T>
-inline auto vec2<T>::distance(vec2 a, vec2 b) -> scalar_result {
+constexpr auto vec2<T>::distance(vec2 a, vec2 b) -> scalar_result {
     return (b - a).len();
-}
-
-template <Scalar T>
-inline auto vec2<T>::lensqr() const -> scalar_result {
-    return vec2::dot(*this, *this);
-}
-
-template <Scalar T>
-inline auto vec2<T>::len() const -> scalar_result {
-    return static_cast<scalar_result>(std::sqrt(vec2::dot(*this, *this)));
-}
-
-template <Scalar T>
-inline auto vec2<T>::normalised() const -> vec2<T> requires std::is_floating_point_v<T> {
-    return *this * (T{1.0} / len());
 }
 
 #endif // ifndef BOOMED_MATH_VEC2_H_
