@@ -3,6 +3,7 @@
 #include <SDL3/SDL_main.h>
 #include "math/vec2.h"
 #include "math/mat22.h"
+#include "math/box2.h"
 
 static SDL_Window* window;
 static SDL_Renderer* renderer;

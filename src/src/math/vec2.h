@@ -3,13 +3,8 @@
 
 #include <cmath>
 #include <cstdint>
-#include <type_traits>
+#include "math/concepts.h"
 
-template <typename T>
-concept ScalarReal = std::floating_point<T>;
-
-template <typename T>
-concept Scalar = ScalarReal<T> || std::signed_integral<T>;
 
 template <Scalar T>
 struct vec2 {
@@ -41,6 +36,8 @@ struct vec2 {
     static constexpr auto cross(vec2 a, vec2 b) -> scalar_result;
     static constexpr auto distancesqr(vec2 a, vec2 b) -> scalar_result;
     static constexpr auto distance(vec2 a, vec2 b) -> scalar_result;
+    static constexpr auto min(vec2 a, vec2 b) -> vec2;
+    static constexpr auto max(vec2 a, vec2 b) -> vec2;
 };
 
 
@@ -159,6 +156,24 @@ constexpr auto vec2<T>::distancesqr(vec2 a, vec2 b) -> scalar_result {
 template <Scalar T>
 constexpr auto vec2<T>::distance(vec2 a, vec2 b) -> scalar_result {
     return (b - a).len();
+}
+
+// Return a vec2 which is the componentwise minimum of a and b
+template <Scalar T>
+constexpr auto vec2<T>::min(vec2 a, vec2 b) -> vec2 {
+    return {
+        static_cast<T>(std::min(a.x, b.x)),
+        static_cast<T>(std::min(a.y, b.y))
+    };
+}
+
+// Return a vec2 which is the componentwise maximum of a and b
+template <Scalar T>
+constexpr auto vec2<T>::max(vec2 a, vec2 b) -> vec2 {
+    return {
+        static_cast<T>(std::max(a.x, b.x)),
+        static_cast<T>(std::max(a.y, b.y))
+    };
 }
 
 #endif // ifndef BOOMED_MATH_VEC2_H_

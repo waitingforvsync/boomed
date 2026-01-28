@@ -8,3 +8,6 @@ set(immer_BUILD_EXAMPLES OFF)
 set(immer_BUILD_DOCS OFF)
 set(immer_BUILD_EXTRAS OFF)
 add_subdirectory("immer-0.9.1")
+
+# Catch2
+add_subdirectory("Catch2-3.12.0")
