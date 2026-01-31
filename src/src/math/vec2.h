@@ -41,10 +41,6 @@ struct vec2 {
 };
 
 
-using vec2f = vec2<float>;
-using vec2i = vec2<std::int16_t>;
-
-
 // Construct a vec2 from two scalars
 template <Scalar T>
 constexpr vec2<T>::vec2(T x, T y) : x{x}, y{y} {}
@@ -81,12 +77,21 @@ constexpr auto operator -(vec2<T> a, vec2<T> b) -> vec2<T> {
     };
 }
 
-// Scale by a scalar
+// Multiply by a scalar
 template <Scalar T>
 constexpr auto operator *(vec2<T> v, T s) -> vec2<T> {
     return {
         static_cast<T>(v.x * s),
         static_cast<T>(v.y * s)
+    };
+}
+
+// Divide by a scalar
+template <Scalar T>
+constexpr auto operator /(vec2<T> v, T s) -> vec2<T> {
+    return {
+        static_cast<T>(v.x / s),
+        static_cast<T>(v.y / s)
     };
 }
 
@@ -127,7 +132,7 @@ constexpr auto vec2<T>::len() const -> scalar_result {
 // Return a normalised vec2
 template <Scalar T>
 constexpr auto vec2<T>::normalised() const -> vec2 requires ScalarReal<T> {
-    return *this * (1 / len());
+    return *this / len();
 }
 
 // Calculate the dot product of a and b

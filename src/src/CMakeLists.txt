@@ -2,7 +2,13 @@ add_executable("boomed" WIN32)
 
 target_include_directories("boomed" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_compile_options("boomed" PRIVATE
+    "$<$<CXX_COMPILER_ID:MSVC>:/W4;/WX;/wd4100;/wd4820;/wd4189;/wd4206;/wd4101>"
+    "$<$<CXX_COMPILER_ID:Clang,GNU>:-Wall;-Wextra;-Wpedantic;-Werror;-Wno-unused-parameter;-Wno-unused-variable;-Wno-unused-function>"
+)
+
 add_subdirectory("app")
 add_subdirectory("math")
+add_subdirectory("platform_sdl3")
 add_subdirectory("world")
-target_link_libraries("boomed" PRIVATE "SDL3::SDL3")
+target_link_libraries("boomed" PRIVATE "immer")

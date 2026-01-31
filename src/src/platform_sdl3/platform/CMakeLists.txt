@@ -4,4 +4,5 @@ target_sources("boomed"
     "app.h"
     "display.cpp"
     "display.h"
+    "main.cpp"
 )

@@ -22,6 +22,7 @@ struct box2 {
 
     // Member ops
     constexpr auto empty() const -> bool;
+    constexpr auto center() const -> vec2<T>;
     constexpr auto contains(box2 b) const -> bool;
     constexpr auto intersects(box2 b) const -> bool;
     constexpr auto contains_point(vec2<T> p) const -> bool;
@@ -43,6 +44,12 @@ constexpr box2<T>::box2(box2<U> b) : min{b.min}, max{b.max} {}
 template <Scalar T>
 constexpr auto box2<T>::empty() const -> bool {
     return min.x >= max.x || min.y >= max.y;
+}
+
+// Get the center point of the box
+template <Scalar T>
+constexpr auto box2<T>::center() const -> vec2<T> {
+    return min + (max - min) / 2;
 }
 
 // Does this box contain box b?
