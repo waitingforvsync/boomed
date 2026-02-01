@@ -1,9 +1,9 @@
-#include "display.h"
+#include "canvas.h"
 #include <stdexcept>
 #include <SDL3/SDL.h>
 
 
-platform::display::display(const char* title, vec2<std::int32_t> size)
+platform::canvas::canvas(const char* title, vec2<std::int32_t> size)
 {
     if (!SDL_CreateWindowAndRenderer(title, size.x, size.y, SDL_WINDOW_RESIZABLE, &win, &rend)) {
         throw std::runtime_error{SDL_GetError()};
@@ -39,7 +39,7 @@ platform::display::display(const char* title, vec2<std::int32_t> size)
 }
 
 
-auto platform::display::size() const -> vec2<std::int32_t>
+auto platform::canvas::size() const -> vec2<std::int32_t>
 {
     auto result = vec2<std::int32_t>{};
     SDL_GetWindowSize(win, &result.x, &result.y);
@@ -47,14 +47,14 @@ auto platform::display::size() const -> vec2<std::int32_t>
 }
 
 
-platform::display::~display()
+platform::canvas::~canvas()
 {
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
 }
 
 
-auto platform::display::clear(std::uint32_t color) const -> void
+auto platform::canvas::clear(std::uint32_t color) const -> void
 {
     SDL_SetRenderDrawColor(
         rend,
@@ -67,7 +67,7 @@ auto platform::display::clear(std::uint32_t color) const -> void
 }
 
 
-auto platform::display::present() const -> void
+auto platform::canvas::present() const -> void
 {
     SDL_RenderPresent(rend);
 }

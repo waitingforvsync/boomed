@@ -8,7 +8,7 @@ target_compile_options("boomed" PRIVATE
 )
 
 add_subdirectory("app")
+add_subdirectory("commands")
 add_subdirectory("math")
 add_subdirectory("platform_sdl3")
 add_subdirectory("world")
-target_link_libraries("boomed" PRIVATE "immer")

@@ -3,9 +3,14 @@
 
 #include <array>
 #include <optional>
-#include <immer/array.hpp>
-#include <immer/box.hpp>
+#include <vector>
 #include "math/box2.h"
+
+
+template <typename Pred, typename Item, typename T>
+concept ContainsFn =
+    Scalar<T> &&
+    std::predicate<Pred&, box2<T>, const Item&>;
 
 
 template <typename Item, Scalar T>
@@ -15,19 +20,24 @@ public:
     explicit quadtree(box2<T> box);
 
     // Add an item into the quadtree
-    auto add(Item item) -> quadtree;
+    template <ContainsFn<Item, T> F>
+    auto add(Item item, F contains_fn) -> bool;
+
+    // Remove an item from the quadtree
+    auto remove(Item item) -> bool;
 
 private:
     static constexpr auto threshold = std::size_t{16};
     static constexpr auto max_depth = std::size_t{8};
 
     struct node {
-        immer::array<Item> values{};
-        std::optional<std::array<immer::box<node>, 4>> children{};
+        std::vector<Item> values{};
+        std::optional<std::size_t> child_index{};
     };
 
-    immer::box<node> root{};
-    box2<T> world_box;
+    node root{};
+    std::vector<std::array<node, 4>> nodes{};
+    box2<T> world_box{};
 };
 
 
@@ -35,8 +45,9 @@ template <typename Item, Scalar T>
 quadtree<Item, T>::quadtree(box2<T> box) : world_box{box} {}
 
 template <typename Item, Scalar T>
-auto quadtree<Item, T>::add(Item item) -> quadtree {
-    return *this;
+template <ContainsFn<Item, T> F>
+auto quadtree<Item, T>::add(Item item, F contains_fn) -> bool {
+    return false;
 }
 
 

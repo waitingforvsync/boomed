@@ -1,5 +1,5 @@
-#ifndef BOOMED_PLATFORM_DISPLAY_H_
-#define BOOMED_PLATFORM_DISPLAY_H_
+#ifndef BOOMED_PLATFORM_CANVAS_H_
+#define BOOMED_PLATFORM_CANVAS_H_
 
 #include <cstdint>
 #include "math/vec2.h"
@@ -8,10 +8,10 @@ struct SDL_Window;
 
 namespace platform {
 
-class display {
+class canvas {
 public:
-    explicit display(const char* title, vec2<std::int32_t> size);
-    virtual ~display();
+    explicit canvas(const char* title, vec2<std::int32_t> size);
+    virtual ~canvas();
 
     auto size() const -> vec2<std::int32_t>;
 
@@ -26,4 +26,4 @@ private:
 } // namespace platform
 
 
-#endif // ifndef BOOMED_PLATFORM_DISPLAY_H_
+#endif // ifndef BOOMED_PLATFORM_CANVAS_H_

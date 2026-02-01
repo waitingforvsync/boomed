@@ -2,7 +2,7 @@
 #define BOOMED_APP_APP_H_
 
 #include "platform/app.h"
-#include "app/display.h"
+#include "app/canvas.h"
 #include "math/vec2.h"
 
 
@@ -11,7 +11,7 @@ public:
     auto render() const -> void;
 
 private:
-    display disp{"BoomEd", vec2<std::int32_t>{1280, 960}};
+    canvas app_canvas{"BoomEd", vec2<std::int32_t>{1280, 960}};
 };
 
 

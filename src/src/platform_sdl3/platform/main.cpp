@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include "app/app.h"
 
-
 auto SDL_AppInit(void** app_state, int argc, char* argv[]) -> SDL_AppResult
 {
     try {
