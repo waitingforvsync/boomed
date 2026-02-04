@@ -1,6 +1,6 @@
 target_sources("boomed"
     PRIVATE
-    "command.h"
+    "cmd.h"
+    "cmd_add_vertex.h"
     "history.h"
-    "transaction.h"
 )
