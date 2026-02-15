@@ -24,11 +24,11 @@ concept CmdType = std::derived_from<T, cmd::base>;
 class cmd_factory {
 public:
     // Construct factory with pool resource
-    explicit cmd_factory(std::pmr::unsynchronized_pool_resource& p) : pool(p) {}
+    explicit cmd_factory(std::pmr::unsynchronized_pool_resource* p) : pool(p) {}
 
     struct deleter {
-        using destroy_fn = void (*)(cmd::base*, std::pmr::memory_resource&) noexcept;
-        std::pmr::memory_resource& mr;
+        using destroy_fn = void (*)(cmd::base*, std::pmr::memory_resource*) noexcept;
+        std::pmr::memory_resource* mr;
         destroy_fn destroy{};
 
         auto operator ()(cmd::base* c) const noexcept -> void {
@@ -42,7 +42,7 @@ public:
     // Make a cmd of the given template argument type
     template <CmdType T, typename... Args>
     unique_cmd make(Args&&... args) {
-        auto alloc = std::pmr::polymorphic_allocator<T>{&pool};
+        auto alloc = std::pmr::polymorphic_allocator<T>{pool};
         T* c = alloc.allocate(1);
         try {
             std::construct_at(c, pool, std::forward<Args>(args)...);
@@ -57,14 +57,14 @@ public:
 private:
     // Destroy a cmd of the given template argument type
     template <CmdType T>
-    static void destroy(cmd::base* base, std::pmr::memory_resource& mr) noexcept {
+    static void destroy(cmd::base* base, std::pmr::memory_resource* mr) noexcept {
         auto* c = static_cast<T*>(base);
         std::destroy_at(c);
-        auto alloc = std::pmr::polymorphic_allocator<T>{&mr};
+        auto alloc = std::pmr::polymorphic_allocator<T>{mr};
         alloc.deallocate(c, 1);
     }
 
-    std::pmr::unsynchronized_pool_resource& pool;
+    std::pmr::unsynchronized_pool_resource* pool;
 };
 
 

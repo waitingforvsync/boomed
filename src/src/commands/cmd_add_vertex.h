@@ -6,7 +6,7 @@
 
 namespace cmd {
     struct add_vertex : public base {
-        explicit add_vertex(std::pmr::memory_resource& mr) {}
+        explicit add_vertex(std::pmr::memory_resource* mr) {}
 
         auto apply() -> void override {
         }
