@@ -5,19 +5,16 @@
 
 
 namespace cmd {
-    struct add_vertex;
+    struct add_vertex : public base {
+        explicit add_vertex(std::pmr::memory_resource& mr) {}
+
+        auto apply() -> void override {
+        }
+
+        auto undo() -> void override {
+        }
+    };
 }
-
-
-struct cmd::add_vertex : public cmd::base {
-    explicit add_vertex(std::pmr::memory_resource& mr) {}
-
-    void apply() override {
-    }
-
-    void undo() override {
-    }
-};
 
 
 #endif // BOOMED_COMMANDS_CMD_ADD_VERTEX_H_

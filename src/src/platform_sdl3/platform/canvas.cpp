@@ -13,7 +13,7 @@ platform::canvas::canvas(const char* title, vec2<std::int32_t> size)
         throw std::runtime_error{SDL_GetError()};
     }
 
-    if (!SDL_SetRenderVSync(rend, 1)) {
+    if (!SDL_SetRenderVSync(rend, SDL_RENDERER_VSYNC_DISABLED)) {
         throw std::runtime_error{SDL_GetError()};
     }
 

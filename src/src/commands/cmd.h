@@ -7,26 +7,14 @@
 
 
 namespace cmd {
-    struct base;
-};
-
-// Interface for all commands
-struct cmd::base {
-    virtual ~base() = default;
-    virtual void apply() = 0;
-    virtual void undo() = 0;
-    virtual bool is_end() const { return false; }
-
-    struct deleter {
-        using destroy_fn = void (*)(cmd::base*, std::pmr::memory_resource&) noexcept;
-        std::pmr::memory_resource& mr;
-        destroy_fn destroy{};
-
-        void operator ()(cmd::base* c) const noexcept { if (c) destroy(c, mr); }
+    // Interface for all commands
+    struct base {
+        virtual ~base() = default;
+        virtual auto apply() -> void = 0;
+        virtual auto undo() -> void = 0;
+        virtual auto is_end() const -> bool { return false; }
     };
-};
-
-using unique_cmd = std::unique_ptr<cmd::base, cmd::base::deleter>;
+}
 
 
 template <typename T>
@@ -37,6 +25,19 @@ class cmd_factory {
 public:
     // Construct factory with pool resource
     explicit cmd_factory(std::pmr::unsynchronized_pool_resource& p) : pool(p) {}
+
+    struct deleter {
+        using destroy_fn = void (*)(cmd::base*, std::pmr::memory_resource&) noexcept;
+        std::pmr::memory_resource& mr;
+        destroy_fn destroy{};
+
+        auto operator ()(cmd::base* c) const noexcept -> void {
+            if (c) destroy(c, mr);
+        }
+    };
+
+    using unique_cmd = std::unique_ptr<cmd::base, deleter>;
+
 
     // Make a cmd of the given template argument type
     template <CmdType T, typename... Args>
@@ -50,7 +51,7 @@ public:
             alloc.deallocate(c, 1);
             throw;
         }
-        return unique_cmd{c, cmd::base::deleter{pool, destroy<T>}};
+        return unique_cmd{c, deleter{pool, destroy<T>}};
     }
 
 private:

@@ -4,4 +4,5 @@ target_sources("boomed"
     "app.h"
     "canvas.cpp"
     "canvas.h"
+    "document.h"
 )
