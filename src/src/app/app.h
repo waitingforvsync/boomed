@@ -8,10 +8,8 @@
 
 class app : public platform::app {
 public:
+    app(const char* title, vec2<std::int32_t> size);
     auto render() const -> void;
-
-private:
-    canvas app_canvas{"BoomEd", vec2<std::int32_t>{1280, 960}};
 };
 
 

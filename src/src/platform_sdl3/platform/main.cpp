@@ -2,12 +2,24 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <stdexcept>
+#include <cstring>
 #include "app/app.h"
+#ifdef WITH_TESTS
+#include <catch2/catch_session.hpp>
+#endif
+
 
 auto SDL_AppInit(void** app_state, int argc, char* argv[]) -> SDL_AppResult
 {
+#ifdef WITH_TESTS
+    if (argc == 2 && std::strcmp(argv[1], "--test") == 0) {
+        auto result = Catch::Session().run(argc - 1, argv + 1);
+        return (result == 0) ? SDL_APP_SUCCESS : SDL_APP_FAILURE;
+    }
+#endif
+
     try {
-        *app_state = new app;
+        *app_state = new app{"BoomEd", vec2<std::int32_t>{1280, 960}};
         return SDL_APP_CONTINUE;
     }
     catch (const std::runtime_error& e) {
