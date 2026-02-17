@@ -2,7 +2,6 @@
 #define BOOMED_APP_APP_H_
 
 #include "platform/app.h"
-#include "app/canvas.h"
 #include "math/vec2.h"
 
 
